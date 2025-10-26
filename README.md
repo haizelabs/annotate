@@ -8,6 +8,12 @@ This repository contains a custom claude code [skill](https://docs.claude.com/en
 
 ## Quick Start
 
+### 0. Install the skill
+```bash
+cd ~/.claude/skills
+git clone git@github.com:haizelabs/annotate.git
+```
+
 ### 1. Navigate to a directory with agent traces
 
 ```bash
