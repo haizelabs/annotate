@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 
 from ._models import AnnotationSpec, FeedbackConfigStats, TestCase
+import os
 
 import json
 from enum import Enum
@@ -31,6 +32,7 @@ from ._models import (
     TestCaseStatus,
 )
 
+MODEL_NAME = os.getenv("HAIZE_ANNOTATE_MODEL_NAME", "openai:gpt-4.1")
 
 def create_validated_reference_model(
     raw_input: Union[InteractionStep, Interaction, InteractionGroup],
@@ -88,7 +90,7 @@ async def summarize_for_judge_input(
     input_items: list[InputItem],
     raw_input: Union[InteractionStep, Interaction, InteractionGroup],
     raw_input_context: Union[Interaction, InteractionGroup, None] = None,
-    model_name: str = "openai:gpt-4.1",
+    model_name: str = MODEL_NAME,
     attribute_matchers: list[AttributeMatcher] | None = None,
     natural_language_disqualifier: Optional[str] = None,
 ) -> JudgeInput | None:

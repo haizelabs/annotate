@@ -132,7 +132,9 @@ This will:
 
 ### Step 4: Review Normalized Output
 
-**Critical validation step!** Always validate the ingested data is as expected before continuing.
+**Critical validation step!** Always validate the ingested data is as expected before continuing using a combination of:
+- `scripts/run_validate_ingested_data.py` (very quick, high level stats)
+- manually reading the data!!! this is important and helps you verify the data shape is what you expected
 
 You **might** need to come back to this later, in case anything with the way we've ingested the data makes giving feedback on agent traces difficult.
 
