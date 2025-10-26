@@ -1,0 +1,23 @@
+[project]
+name = "annotate"
+version = "0.1.0"
+description = "Claude skill for annotating AI agent traces"
+requires-python = ">=3.10"
+dependencies = [
+  "pydantic>=2.0.0",
+  "pydantic-ai>=0.0.14",
+  "fastapi>=0.100.0",
+  "uvicorn>=0.23.0",
+  "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "mypy",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
