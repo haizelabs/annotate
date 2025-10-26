@@ -1,0 +1,62 @@
+# Python
+*__pycache__*
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.ENV
+.env.local
+
+# Ruff
+.ruff_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs and traces
+*.log
+logs/
+example_logs/
+traces/
+*/traces/
+
+# Claude Agent
+.claude/
+
+# Annotation artifacts
+.haize_annotations/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+frontend/*.local
+
+# Test data
+frontend/src/testCases/
+frontend/src/traces/
+*.jsonl
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
