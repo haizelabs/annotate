@@ -11,10 +11,10 @@ This repository contains a custom Claude Code [skill](https://docs.claude.com/en
 ## Quick Start
 
 
-### 1. Navigate to a directory with agent traces
+### 1. Install the skill
 
 ```bash
-# Activate virtual env
+# Create and activate virtual environment
 uv venv
 source .venv/bin/activate
 
@@ -23,10 +23,11 @@ git clone git@github.com:haizelabs/annotate.git
 
 # Move skill to Claude skills directory
 mv annotate/annotate_skill ~/.claude/skills/annotate_skill
+cd ~/.claude/skills/annotate_skill
 
 # Install dependencies
-pip install -r ~/.claude/skills/annotate_skill/requirements.txt
-(cd ~/.claude/skills/annotate_skill/frontend && yarn install)
+pip install -r requirements.txt
+cd frontend && yarn install && cd ..
 ```
 
 ### 2. Navigate to a directory with agent traces
