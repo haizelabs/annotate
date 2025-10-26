@@ -1,6 +1,6 @@
 # Annotate
 
-This repository contains a claude code skill to help with exploring and annotating agent trace data 
+This repository contains a custom claude code [skill](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) to help with exploring and annotating agent trace data 
 
 - `SKILL.md` - Full instructions Claude uses when running the workflow
 - `references/` - Deep dives on ingestion patterns, rubric design, etc.
@@ -12,13 +12,15 @@ This repository contains a claude code skill to help with exploring and annotati
 
 ```bash
 cd /path/to/your/agent/traces
+export OPENAI_API_KEY=... # api key required for ai judge setup
 claude
 ```
+any [supported pydantic ai model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. "openai:gpt-4.1"
 
 ### 2. Trigger the skill
 
 ```
-hey claude use annotate
+> hey claude use annotate
 ```
 
 Claude will guide you through:
@@ -26,9 +28,10 @@ Claude will guide you through:
 2. **Configuring** what you want to evaluate (pass/fail? pairwise ranking? scoring?)
 3. **Annotating** based on your bespoke configuration with assistant from an AI judge
 
-**note** claude will open up an ai interaction visualizer in the browser during the annotation process. use this as a reference when providing feedback on interactions.
+**note**: claude will open up an ai interaction visualizer in the browser during the annotation process. use this as a reference when providing feedback on interactions.
+**note** as part of the data ingestion / normalization process, claude code will implement `normalize` function defined in an auto-generated `ingest.py` script. **please review** the generated code before allowing it to be run.
 
-### 3. That's it!
+That's it!
 
 The skill handles:
 - giving claude the relevant setup scripts and tools to navigate your trace data
@@ -41,8 +44,8 @@ When you use this skill, a `.haize_annotations/` directory is created in your wo
 ```
 your-project/
 ├── .haize_annotations/
-│   ├── ingest.py              # Your custom ingestion script
-│   ├── ingested_data/         # Normalized traces
+│   ├── ingest.py              # Custom ingestion script
+│   ├── ingested_data/         # Ingested agent interactions
 │   ├── feedback_config.json   # Evaluation criteria
 │   └── test_cases/            # Annotated cases
 └── raw_traces.jsonl
