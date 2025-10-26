@@ -10,8 +10,11 @@ This repository contains a custom Claude Code [skill](https://docs.claude.com/en
 
 ### 0. Install the skill
 ```bash
-cd ~/.claude/skills
 git clone git@github.com:haizelabs/annotate.git
+mv annotate/annotate_skill ~/.claude/skills/annotate_skill
+cd  ~/.claude/skills/annotate_skill
+pip install -e .
+cd frontend && yarn install
 ```
 
 ### 1. Navigate to a directory with agent traces
@@ -66,7 +69,7 @@ The skill needs Python and Node.js dependencies:
 
 ```bash
 # Install Python backend dependencies
-cd annotate-skill  # or /path/to/annotate-skill
+cd ~/.claude/skills/annotate
 pip install -e .
 
 # Install frontend dependencies
