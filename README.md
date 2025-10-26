@@ -42,13 +42,11 @@ Claude will guide you through:
 2. **Configuring** what you want to evaluate (pass/fail? pairwise ranking? scoring?)
 3. **Annotating** based on your bespoke configuration with assistant from an AI judge
 
-That's it!
-
 The skill handles:
 - giving Claude the relevant setup scripts and tools to navigate your trace data
 - distilling and filtering raw agent transcripts into the specific information relevant for annotating
 
-#### ⚠️ Important Notes
+### ⚠️ Important Notes
 
 **Browser Interaction:** Claude will automatically open an AI interaction visualizer in your browser during the annotation process. This visualizer provides a detailed view of the agent's interactions and decisions. **Use this as your reference** when providing feedback, as it shows the full context of what the AI agent did.
 
@@ -65,7 +63,7 @@ your-project/
 │   ├── ingested_data/         # Ingested agent interactions
 │   ├── feedback_config.json   # Evaluation criteria
 │   └── test_cases/            # Annotated cases
-└── raw_traces.jsonl
+└── <your-raw-traces.jsonl>
 ```
 
 All state lives here - delete it to start fresh. 
