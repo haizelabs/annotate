@@ -1,6 +1,10 @@
-pass# Annotate
+# Annotate
 
-This repository contains a claude code skill to help with exploring and annotating agent trace data 
+This repository contains a custom claude code [skill](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) to help with exploring and annotating agent trace data 
+
+- `SKILL.md` - Full instructions Claude uses when running the workflow
+- `references/` - Deep dives on ingestion patterns, rubric design, etc.
+- `scripts/` - Helper scripts and a simple api server your agent uses when aiding with annotation workflows
 
 ## Quick Start
 
@@ -8,44 +12,48 @@ This repository contains a claude code skill to help with exploring and annotati
 
 ```bash
 cd /path/to/your/agent/traces
+export OPENAI_API_KEY=... # api key required for ai judge setup
+claude
 ```
+any [supported pydantic ai model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. "openai:gpt-4.1"
 
-### 2. Invoke the skill in Claude Code
+### 2. Trigger the skill
 
 ```
-use annotate
+> hey claude use annotate
 ```
 
 Claude will guide you through:
 1. **Ingesting** your raw traces into a normalized format
 2. **Configuring** what you want to evaluate (pass/fail? pairwise ranking? scoring?)
-3. **Annotating** in a web UI while AI judge runs in parallel
+3. **Annotating** based on your bespoke configuration with assistant from an AI judge
 
-### 3. That's it!
+**note**: claude will open up an ai interaction visualizer in the browser during the annotation process. use this as a reference when providing feedback on interactions.
+**note** as part of the data ingestion / normalization process, claude code will implement `normalize` function defined in an auto-generated `ingest.py` script. **please review** the generated code before allowing it to be run.
+
+That's it!
 
 The skill handles:
-- Setting up the annotation server (FastAPI + React)
-- Generating test cases from your data
-- Running AI judge in the background
-- Tracking human vs AI agreement rates
+- giving claude the relevant setup scripts and tools to navigate your trace data
+- distilling and filtering raw agent transcripts into the specific information relevant for annotating
 
 ## What Gets Created
 
-When you use this skill, it creates a `.haize_annotations/` directory in your working directory:
+When you use this skill, a `.haize_annotations/` directory is created in your working directory
 
 ```
 your-project/
 ├── .haize_annotations/
-│   ├── ingest.py              # Your custom ingestion script
-│   ├── ingested_data/         # Normalized traces
+│   ├── ingest.py              # Custom ingestion script
+│   ├── ingested_data/         # Ingested agent interactions
 │   ├── feedback_config.json   # Evaluation criteria
 │   └── test_cases/            # Annotated cases
-└── your-raw-traces/
+└── raw_traces.jsonl
 ```
 
-All state lives here - delete it to start fresh.
+All state lives here - delete it to start fresh. 
 
-## Installation (One-Time)
+### Dependencies
 
 The skill needs Python and Node.js dependencies:
 
@@ -59,60 +67,8 @@ cd frontend
 yarn install
 ```
 
-## Common Use Cases
-
-**Evaluate conversation quality**
-- Did the agent answer the user's question?
-- Pass/fail at the session level
-
-**Compare agent responses**
-- Which response is better?
-- Pairwise ranking of individual interactions
-
-**Score specific attributes**
-- Rate helpfulness 1-10
-- Continuous scoring with custom criteria
-
-**Iterate on rubrics**
-- Start with basic criteria
-- Annotate 10-20 cases
-- Find disagreements with AI
-- Refine rubric
-- Regenerate and repeat
-
-## What Makes This Different?
-
-- **Trace-native**: Built for multi-step agent logs, not single LLM calls
-- **Rubric-focused**: Easy to update evaluation criteria and regenerate cases
-- **AI judge alignment**: See exactly where your AI judge disagrees with you
-- **Format agnostic**: Works with any trace format (you write simple ingestion logic)
-- **Claude-integrated**: The entire workflow is guided by Claude in the CLI
-
-## Troubleshooting
-
-**Servers won't start?**
-- Make sure ports 8000 and 5173 are free
-- Install dependencies (see Installation section)
-
-**No test cases showing up?**
-- Wait 10-30 seconds for AI pipeline to process
-- Check stats to see progress: the server logs show pending → summarized → ai_annotated
-
-**Want to start over?**
-- Delete `.haize_annotations/` directory
-- Or just update `feedback_config.json` via the API (archives old test cases automatically)
-
-## Learn More
-
-- `SKILL.md` - Full instructions Claude uses when running the workflow
-- `references/` - Deep dives on ingestion patterns, rubric design, etc.
-- `scripts/` - Backend implementation (FastAPI server, data models, etc.)
-
-### Limitations
-Although this is designed to be a flexible annotation workflow, there are some limitations we should still acknowledge
+## Limitations
 - traces can't be too large - they currently have to fit in an LLM call for summarization purposes
 - if the source data is just missing some info (e.g. session id), theres not much we can do - the ingestion script is very basic
 and can re-construct or do intelligent analysis
-- this is a lightweight local tool; we cap the number of test cases generated to 100
-# annotate
-# annotate
+- this is a lightweight local-only tool; we manually cap the number of test cases to 100 at any given time
