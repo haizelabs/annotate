@@ -24,7 +24,7 @@ This skill requires Python and Node.js dependencies. If the user encounters erro
 
 ```bash
 # From the annotate skill directory
-pip install -r requirements.txt
+pip install -e .
 
 # Frontend dependencies (from frontend/ subdirectory)
 cd frontend && yarn install

@@ -66,8 +66,8 @@ The skill needs Python and Node.js dependencies:
 
 ```bash
 # Install Python backend dependencies
-cd annotate  # or /path/to/annotate
-pip install -r requirements.txt
+cd annotate-skill  # or /path/to/annotate-skill
+pip install -e .
 
 # Install frontend dependencies
 cd frontend
