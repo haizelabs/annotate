@@ -8,13 +8,20 @@ This repository contains a custom Claude Code [skill](https://docs.claude.com/en
 
 ## Quick Start
 
-### 0. Install the skill
+
+#### Install the skill
 ```bash
+# Create and activate a virtual env
+uv venv
+source .venv/bin/activate
+
+# Download the annotation skill
 git clone git@github.com:haizelabs/annotate.git
 mv annotate/annotate_skill ~/.claude/skills/annotate_skill
-cd  ~/.claude/skills/annotate_skill
-pip install -e .
-cd frontend && yarn install
+
+# Install dependencies
+pip install -e ~/.claude/skills/annotate_skill
+(cd ~/.claude/skills/annotate_skill/frontend && yarn install)
 ```
 
 ### 1. Navigate to a directory with agent traces
@@ -75,6 +82,11 @@ The skill needs Python and Node.js dependencies:
 ```bash
 # Install Python backend dependencies
 cd ~/.claude/skills/annotate
+
+# Create and activate virtual environment (if not already done)
+uv venv
+source .venv/bin/activate
+
 pip install -e .
 
 # Install frontend dependencies
