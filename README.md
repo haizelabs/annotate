@@ -20,7 +20,7 @@ git clone git@github.com:haizelabs/annotate.git
 mv annotate/annotate_skill ~/.claude/skills/annotate_skill
 
 # Install dependencies
-pip install -e ~/.claude/skills/annotate_skill
+pip install -r ~/.claude/skills/annotate_skill/requirements.txt
 (cd ~/.claude/skills/annotate_skill/frontend && yarn install)
 ```
 
@@ -87,11 +87,10 @@ cd ~/.claude/skills/annotate
 uv venv
 source .venv/bin/activate
 
-pip install -e .
+pip install -r requirements.txt
 
 # Install frontend dependencies
-cd frontend
-yarn install
+(cd frontend && yarn install)
 ```
 
 ## Limitations
