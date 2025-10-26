@@ -26,6 +26,8 @@ Claude will guide you through:
 2. **Configuring** what you want to evaluate (pass/fail? pairwise ranking? scoring?)
 3. **Annotating** based on your bespoke configuration with assistant from an AI judge
 
+**note** claude will open up an ai interaction visualizer in the browser during the annotation process. use this as a reference when providing feedback on interactions.
+
 ### 3. That's it!
 
 The skill handles:
