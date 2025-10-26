@@ -20,11 +20,16 @@ cd frontend && yarn install
 ### 1. Navigate to a directory with agent traces
 
 ```bash
-cd /path/to/your/agent/traces
+# If you don't have logs yet, use the example data:
+cd /Users/haizelabsguest/haizelabs/osource-aa/annotate/tests/example_research_agent
+
+# OR navigate to your own agent traces directory:
+# cd /path/to/your/agent/data
+
 export OPENAI_API_KEY=... # API key required for AI judge setup
 claude
 ```
-Any [supported Pydantic AI model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set the `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. "openai:gpt-4.1"
+*Any [supported Pydantic AI model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set the `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. "openai:gpt-4.1"*
 
 ### 2. Trigger the skill
 
@@ -37,15 +42,17 @@ Claude will guide you through:
 2. **Configuring** what you want to evaluate (pass/fail? pairwise ranking? scoring?)
 3. **Annotating** based on your bespoke configuration with assistant from an AI judge
 
-**Note:** Claude will open an AI interaction visualizer in the browser during the annotation process. Use this as a reference when providing feedback on interactions.
-
-**Note:** As part of the data ingestion / normalization process, Claude code will implement the `ingest()` function defined in an auto-generated `ingest.py` script. **Please review** the generated code before allowing it to be run.
-
 That's it!
 
 The skill handles:
 - giving Claude the relevant setup scripts and tools to navigate your trace data
 - distilling and filtering raw agent transcripts into the specific information relevant for annotating
+
+#### ⚠️ Important Notes
+
+**Browser Interaction:** Claude will automatically open an AI interaction visualizer in your browser during the annotation process. This visualizer provides a detailed view of the agent's interactions and decisions. **Use this as your reference** when providing feedback, as it shows the full context of what the AI agent did.
+
+**Code execution:** During the ingestion phase, Claude will generate a custom `ingest.py` script containing a `ingest()` function that transforms your raw trace data. **You must review this generated code before execution** - it will write custom parsing logic based on your specific data format. Only run the script if you understand what it's doing and agree with the transformation logic.
 
 ## What Gets Created
 
