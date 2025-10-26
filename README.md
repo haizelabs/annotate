@@ -1,5 +1,7 @@
 # Annotate
 
+## Overview
+
 This repository contains a custom Claude Code [skill](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) to help with exploring and annotating agent trace data.
 
 - `SKILL.md` - Full instructions Claude uses when running the workflow
@@ -9,14 +11,17 @@ This repository contains a custom Claude Code [skill](https://docs.claude.com/en
 ## Quick Start
 
 
-#### Install the skill
+### 1. Navigate to a directory with agent traces
+
 ```bash
-# Create and activate a virtual env
+# Activate virtual env
 uv venv
 source .venv/bin/activate
 
-# Download the annotation skill
+# Clone the repository
 git clone git@github.com:haizelabs/annotate.git
+
+# Move skill to Claude skills directory
 mv annotate/annotate_skill ~/.claude/skills/annotate_skill
 
 # Install dependencies
@@ -24,7 +29,7 @@ pip install -r ~/.claude/skills/annotate_skill/requirements.txt
 (cd ~/.claude/skills/annotate_skill/frontend && yarn install)
 ```
 
-### 1. Navigate to a directory with agent traces
+### 2. Navigate to a directory with agent traces
 
 ```bash
 # If you don't have logs yet, use the example data:
@@ -33,12 +38,18 @@ cd /Users/haizelabsguest/haizelabs/osource-aa/annotate/tests/example_research_ag
 # OR navigate to your own agent traces directory:
 # cd /path/to/your/agent/data
 
-export OPENAI_API_KEY=... # API key required for AI judge setup
+# Set your API key (required for AI judge setup)
+export OPENAI_API_KEY=...
+
+# Start Claude Code
 claude
 ```
-*Any [supported Pydantic AI model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set the `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. "openai:gpt-4.1"*
 
-### 2. Trigger the skill
+> **Note:** Any [supported Pydantic AI model](https://ai.pydantic.dev/models/overview/) can power this tool. To change the underlying model, set the `HAIZE_ANNOTATE_MODEL_NAME` environment variable, e.g. `"openai:gpt-4.1"`
+
+### 3. Trigger the skill
+
+Once Claude Code is running, activate the skill:
 
 ```
 > hey claude use annotate
