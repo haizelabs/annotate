@@ -86,6 +86,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Annotation Session API", lifespan=lifespan)
 
+
 async def save_feedback_config():
     """Save feedback_config with updated stats to disk."""
     global feedback_config, haize_annotations_dir

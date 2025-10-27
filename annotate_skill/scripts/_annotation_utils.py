@@ -34,6 +34,7 @@ from ._models import (
 
 MODEL_NAME = os.getenv("HAIZE_ANNOTATE_MODEL_NAME", "openai:gpt-4.1")
 
+
 def create_validated_reference_model(
     raw_input: Union[InteractionStep, Interaction, InteractionGroup],
 ) -> type[Reference]:
@@ -440,21 +441,23 @@ async def create_ai_annotation(
     return annotation
 
 
-def _calculate_pearson_correlation(values_a: list[float], values_b: list[float]) -> float | None:
+def _calculate_pearson_correlation(
+    values_a: list[float], values_b: list[float]
+) -> float | None:
     """Calculate Pearson correlation coefficient between two lists of values."""
     if len(values_a) != len(values_b) or len(values_a) == 0:
         return None
-    
+
     mean_a = statistics.mean(values_a)
     mean_b = statistics.mean(values_b)
-    
+
     numerator = sum((a - mean_a) * (b - mean_b) for a, b in zip(values_a, values_b))
     denom_a = sum((a - mean_a) ** 2 for a in values_a) ** 0.5
     denom_b = sum((b - mean_b) ** 2 for b in values_b) ** 0.5
-    
+
     if denom_a == 0 or denom_b == 0:
         return None
-    
+
     return numerator / (denom_a * denom_b)
 
 
@@ -471,7 +474,7 @@ def _compute_ranking_stats(
     agreements = 0
     disagreements = 0
     disagreed_ids = []
-    
+
     ai_rankings = []
     human_rankings = []
 
@@ -498,7 +501,7 @@ def _compute_ranking_stats(
 
         if correlations:
             stats.correlation = sum(correlations) / len(correlations)
-    
+
     return agreements, disagreements, disagreed_ids
 
 
@@ -510,7 +513,7 @@ def _compute_categorical_stats(
     agreements = 0
     disagreements = 0
     disagreed_ids = []
-    
+
     ai_categories = []
     human_categories = []
     confusion = defaultdict(lambda: defaultdict(int))
@@ -533,7 +536,7 @@ def _compute_categorical_stats(
     stats.ai_category_distribution = dict(Counter(ai_categories))
     stats.human_category_distribution = dict(Counter(human_categories))
     stats.confusion_matrix = {k: dict(v) for k, v in confusion.items()}
-    
+
     return agreements, disagreements, disagreed_ids
 
 
@@ -545,7 +548,7 @@ def _compute_continuous_stats(
     agreements = 0
     disagreements = 0
     disagreed_ids = []
-    
+
     ai_scores = []
     human_scores = []
 
@@ -569,10 +572,10 @@ def _compute_continuous_stats(
 
     if ai_scores and human_scores:
         stats.mean_absolute_error = _calculate_mae(ai_scores, human_scores)
-        
+
         if len(ai_scores) > 1:
             stats.correlation = _calculate_pearson_correlation(ai_scores, human_scores)
-    
+
     return agreements, disagreements, disagreed_ids
 
 
@@ -587,11 +590,16 @@ def compute_feedback_config_stats(
     stats.ai_annotated = status_counts.get(TestCaseStatus.AI_ANNOTATED, 0)
     stats.human_annotated = status_counts.get(TestCaseStatus.HUMAN_ANNOTATED, 0)
     stats.invalid = status_counts.get(TestCaseStatus.INVALID, 0)
-    
-    total_statused = sum([
-        stats.pending, stats.summarized, stats.ai_annotated, 
-        stats.human_annotated, stats.invalid
-    ])
+
+    total_statused = sum(
+        [
+            stats.pending,
+            stats.summarized,
+            stats.ai_annotated,
+            stats.human_annotated,
+            stats.invalid,
+        ]
+    )
     if total_statused != stats.total_test_cases:
         raise ValueError(
             f"Status count mismatch: {total_statused} statused test cases "
@@ -614,11 +622,17 @@ def compute_feedback_config_stats(
 
     # Compute type-specific statistics
     if feedback_spec.type == "ranking":
-        agreements, disagreements, disagreed_ids = _compute_ranking_stats(dual_annotated, stats)
+        agreements, disagreements, disagreed_ids = _compute_ranking_stats(
+            dual_annotated, stats
+        )
     elif feedback_spec.type == "categorical":
-        agreements, disagreements, disagreed_ids = _compute_categorical_stats(dual_annotated, stats)
+        agreements, disagreements, disagreed_ids = _compute_categorical_stats(
+            dual_annotated, stats
+        )
     elif feedback_spec.type == "continuous":
-        agreements, disagreements, disagreed_ids = _compute_continuous_stats(dual_annotated, stats)
+        agreements, disagreements, disagreed_ids = _compute_continuous_stats(
+            dual_annotated, stats
+        )
     else:
         agreements, disagreements, disagreed_ids = 0, 0, []
 
