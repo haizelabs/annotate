@@ -1,4 +1,7 @@
-# Annotate
+<div align="center">
+  <h1>Haize Annotate</h1>
+  <img width="681" height="483" alt="image" src="https://github.com/user-attachments/assets/2404b62d-3e03-43d1-80b4-d106e1032970" />
+</div>
 
 ## Overview
 
