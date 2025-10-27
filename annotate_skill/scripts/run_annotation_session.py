@@ -477,8 +477,10 @@ def main():
 
         try:
             frontend_env = os.environ.copy()
-            frontend_env["VITE_BACKEND_URL"] = "http://localhost:"
+            frontend_env["VITE_BACKEND_URL"] = "http://localhost"
             frontend_env["VITE_BACKEND_PORT"] = str(args.port)
+            print("FRONT END ENV:", frontend_env)
+            print(frontend_env)
             frontend_process = subprocess.Popen(
                 ["npm", "run", "dev", "--", "--port", str(args.frontend_port)],
                 cwd=frontend_dir,

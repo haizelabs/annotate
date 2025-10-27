@@ -3,7 +3,7 @@ import * as z from "zod";
 
 export const ENV_VARS = z.object({
   VITE_BACKEND_URL: z.string().default("http://localhost"),
-  VITE_BACKEND_PORT: z.number().default(8000),
+  VITE_BACKEND_PORT: z.string().default("8000"),
 });
 
 function getBaseURL(): string {
