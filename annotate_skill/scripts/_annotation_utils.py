@@ -625,7 +625,6 @@ def compute_feedback_config_stats(
     if not dual_annotated:
         return stats
 
-    # Compute type-specific statistics
     if feedback_spec.type == "ranking":
         agreements, disagreements, disagreed_ids = _compute_ranking_stats(
             dual_annotated, stats
