@@ -389,7 +389,8 @@ class FeedbackConfig(BaseModel):
             'interaction' for complete traces,
                 example: in order to evaluate the correctness of a tool call, we must include some context on what happened before and after the tool call.
             'group' for session-level evaluation,
-                example: in order to evaluate the quality of the agent's response, we must include some context on the previous messages (interactions) in the conversation.""",
+                example: in order to evaluate the quality of the agent's response, we must include some context on the previous messages (interactions) in the conversation.
+            Very important! The granularity of the eval often does not contain all the information needed for the eval itself""",
     )
     feedback_spec: AnnotationSpec = Field(
         default_factory=RankingSpec,

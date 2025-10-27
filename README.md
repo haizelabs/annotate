@@ -108,6 +108,14 @@ pip install -r requirements.txt
 (cd frontend && yarn install)
 ```
 
+## Next steps
+Once you've landed on an annotation experience / judge you find useful, ask claude for next steps, e.g.
+bash```
+> next steps
+> ok for next steps help me export the rubric to my current eval setup
+> ok for next steps i want to convert this to a quick web-app we can use for annotations
+```
+
 ## Limitations
 - Traces can't be too large - they currently have to fit in an LLM call for summarization purposes
 - If the source data is just missing some info (e.g. session id), there's not much we can do - the ingestion script is very basic and cannot re-construct or do intelligent analysis

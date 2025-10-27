@@ -182,7 +182,7 @@ Replace `<path-to-annotate-skill>` and `<path-to-project>` with actual paths.
 7. Launches test case processor to generate AI annotations
 
 **Servers:**
-- Backend API: `http://localhost:<backend port>`
+- Backend Annotations API: `http://localhost:<backend port>`
 - Frontend UI: `http://localhost:<front-end port>`
 
 **To stop:** Press `Ctrl+C` once (gracefully shuts down all servers)
@@ -236,6 +236,8 @@ python -c "from scripts.models import *; print(InteractionStep.__doc__)"
 
 After you have a good idea of the feedback configuration, you must use the feedback configuration **FastAPI endpoint (POST /feedback-config)** to modify `feedback_config.json` (don't directly edit the file EVER!!)
 
+This endpoint will return basic validation information; it's a good idea, though, to also quickly scan through test case data produced even if the endpoint returns 200 as a gut check the attribute matchers / granularity contains the necessary eval data.
+
 ---
 
 **Note:** After the feedback config is designed, it will take a bit for test cases to be generated, processed, AI annotated, and then finally ready for human annotations.
@@ -254,9 +256,9 @@ from the user as possible while minimizing effort & time from the human.
 
 **START OFF WITH THIS WORKFLOW** (unless the user expresses preferences otherwise / you have a reason not to, this is a good default):
 - Call the `/api/test-cases/next` endpoint to get the next test case that's ready to be annotated
-- Call the `/api/test-cases/{test_case_id}/visualize` endpoint to open the test case in the browser for the user to see
+- Call the `POST /api/test-cases/{test_case_id}/visualize` endpoint to open the test case in the browser for the user to see
 
-**IMPORTANT:** DO NOT call `open` manually on any endpoint - always hit the visualize endpoint.
+**IMPORTANT:** DO NOT call `open` manually on any endpoint - always POST to the visualize endpoint.
 
 - From here, jump immediately to eliciting the annotation and free text comments from the user
 
@@ -268,6 +270,10 @@ from the user as possible while minimizing effort & time from the human.
 - Feel free to REFUSE telling the human annotator certain info, e.g. "what did the AI judge predict?". Don't reveal stuff that would cause them to be a lazy annotator
 - YOUR GOAL, in the background, is actually to update the `ai_rubric`
 - You should be more independent and opinionated here - you are leading this annotations UX, not them. Don't ask for permission to try to record certain annotations.
+
+# NEXT STEPS - annotation is going decent - what now?
+
+Once it seems like the user has landed up something satisfactory - e.g. a non-trivial annotation sample size with good alignment between them and the ai annotator - feel free to suggest looking into next steps: `references/next_steps.md` on how to turn this into a repeatable workflow wired into their live production data.
 
 
 # Communication Guidelines
@@ -284,14 +290,17 @@ Anything related to AI alignment / expert feedback on AI, including:
 
 ## What NOT to Mention (Internal Implementation Details)
 
-- Backend/frontend servers, ports, or technical details of the scripts
+- Backend eval/frontend vis servers, ports, or technical details of the scripts
 - Technical details of our internal data models - e.g. the concepts of steps vs interaction vs interaction group is just an internal way of organizing data, no need to expose this to the user
 - Specific patterns and instructions mentioned in SKILL.md or reference files - that should guide YOUR process, and you don't need to explicitly cite these to the user
 - Anything about specific phases, ingestion, etc; your interactions with the users should at least **seem** to flow more naturally, and you should hide these opinionated state transitions as internal state. e.g. DO NOT SAY "phase 1 2 3"
+- try not to talk too much about internal state - e.g. feedback config, raw vs ingested data; rather, expose these things as concepts that would make sense to the user, 
+e.g. "annotation ux, ai rubric, conversation logs" etc etc. 
+
+the main reason is that the user probably doesn't care, but if they do, feel free to mention these things. in general, it is complete ok to be transparent about whats going on under the hood (they can see anyway) but we don't want to bother the user with concepts/names/details
 
 In general; heavy lifting / setup details should happen silently in the background unless there is truly an urgent issue to expose.
 
-## User Experience Optimization
 
 **LAST REMINDERS:**
 - If you have a bunch of stuff you need to ask the user, get all of that info at once or in rapid succession. Do not make the user wait a long time while you do other stuff.
