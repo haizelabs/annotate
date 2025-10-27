@@ -362,10 +362,6 @@ class FeedbackConfigStats(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp when stats were last computed",
     )
-    ai_model: Optional[str] = Field(
-        default=None,
-        description="AI model used for annotations (e.g., 'openai:gpt-5-nano')",
-    )
 
 
 class FeedbackConfig(BaseModel):

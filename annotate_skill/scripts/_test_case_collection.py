@@ -18,7 +18,6 @@ from ._models import (
 )
 from itertools import combinations
 from ._models import RankingSpec
-import logfire
 from ._interaction_utils import (
     build_interaction_objects,
     build_interaction_groups,
@@ -369,14 +368,16 @@ class TestCaseCollection:
         tc = self.get_test_case(test_case_id)
         return tc.ai_annotation is not None
 
-    @logfire.instrument("mark_as_invalid")
     def mark_as_invalid(
         self, test_case_id: str, reason: str = "Required fields not available"
     ) -> None:
         """Mark a test case as invalid (skipped due to missing required fields)."""
         tc = self.get_test_case(test_case_id)
         tc.status = TestCaseStatus.INVALID
-        tc.judge_inputs = None
+        if isinstance(tc, RankingAnnotationTestCase):
+            tc.judge_inputs = None
+        else:
+            tc.judge_input = None
         tc.updated_at = datetime.now(timezone.utc)
         self.save_test_case(tc)
 

@@ -91,10 +91,13 @@ async def summarize_for_judge_input(
     input_items: list[InputItem],
     raw_input: Union[InteractionStep, Interaction, InteractionGroup],
     raw_input_context: Union[Interaction, InteractionGroup, None] = None,
-    model_name: str = MODEL_NAME,
+    model_name: Optional[str] = None,
     attribute_matchers: list[AttributeMatcher] | None = None,
     natural_language_disqualifier: Optional[str] = None,
 ) -> JudgeInput | None:
+    if model_name is None:
+        model_name = MODEL_NAME
+
     if attribute_matchers:
         for matcher in attribute_matchers:
             matches = matcher.matches(raw_input)
@@ -136,7 +139,7 @@ async def summarize_for_judge_input(
 
     context_section = ""
     if raw_input_context:
-        context_json = json.dumps(raw_input_context.model_dump(mode="json"), indent=2)
+        context_json = raw_input_context.model_dump_json()
         context_section = f"""
 Additional context:
 {context_json}
@@ -261,7 +264,7 @@ async def create_ai_annotation(
     ],
     ai_rubric: str,
     test_case_id: str,
-    model_name: str = "openai:gpt-5-nano",
+    model_name: Optional[str] = None,
 ) -> Annotation:
     """
     Create AI annotation using structured output and the provided rubric.
@@ -276,6 +279,8 @@ async def create_ai_annotation(
     Returns:
         Annotation with skip=True if evaluation is not applicable
     """
+    if model_name is None:
+        model_name = MODEL_NAME
     base_fields = {
         "skip": (
             bool,

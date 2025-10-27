@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
-
+from typing import Union
 from ._annotation_utils import summarize_for_judge_input, create_ai_annotation
 from ._models import (
     PointwiseAnnotationTestCase,
     RankingAnnotationTestCase,
     TestCaseStatus,
+    InteractionStep,
+    Interaction,
+    InteractionGroup,
 )
 
 if TYPE_CHECKING:
@@ -26,40 +29,40 @@ class TestCaseProcessor:
         self,
         test_case_collection: "TestCaseCollection",
         feedback_config: "FeedbackConfig",
-        steps: list,
-        interactions: list,
-        groups: list,
-        model_name: str = "openai:gpt-5-nano",
+        steps: list[InteractionStep],
+        interactions: list[Interaction],
+        groups: list[InteractionGroup],
     ):
         self.test_case_collection = test_case_collection
         self.feedback_config = feedback_config
         self.steps = steps
         self.interactions = interactions
         self.groups = groups
-        self.model_name = model_name
         self.error: Exception | None = None
 
     def get_context(
         self, test_case: PointwiseAnnotationTestCase | RankingAnnotationTestCase
-    ) -> str:
+    ) -> Union[Interaction, InteractionGroup, None]:
         if self.feedback_config.requires_context == "interaction":
-            return "\n".join(
-                [
-                    interaction.to_json()
+            return next(
+                (
+                    interaction
                     for interaction in self.interactions
                     if interaction.id == test_case.raw_judge_input.interaction_id
-                ]
+                ),
+                None,
             )
         elif self.feedback_config.requires_context == "group":
-            return "\n".join(
-                [
-                    group.to_json()
+            return next(
+                (
+                    group
                     for group in self.groups
                     if group.id == test_case.raw_judge_input.group_id
-                ]
+                ),
+                None,
             )
         else:
-            return ""
+            return None
 
     async def process_batch(
         self,
@@ -126,7 +129,6 @@ class TestCaseProcessor:
                         feedback_spec=self.feedback_config.feedback_spec,
                         ai_rubric=self.feedback_config.ai_rubric,
                         test_case_id=tc.test_case_id,
-                        model_name=self.model_name,
                     )
                     self.test_case_collection.update_ai_annotation(
                         tc.test_case_id, ai_annotation

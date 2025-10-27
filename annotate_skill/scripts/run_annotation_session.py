@@ -54,8 +54,8 @@ logger = logging.getLogger(__name__)
 haize_annotations_dir: Optional[Path] = None
 source_data_directory: Optional[Path] = None
 collection: Optional[TestCaseCollection] = None
-pipeline_worker: Optional[TestCaseProcessor] = None
-pipeline_task: Optional[asyncio.Task] = None
+test_case_processor_worker: Optional[TestCaseProcessor] = None
+test_case_processor_task: Optional[asyncio.Task] = None
 
 feedback_config: Optional[FeedbackConfig] = None
 frontend_process: Optional[subprocess.Popen] = None
@@ -66,12 +66,12 @@ frontend_port: int = 5173
 async def lifespan(app: FastAPI):
     await refresh_on_startup_or_config_change()
     yield
-    global pipeline_task, frontend_process
+    global test_case_processor_task, frontend_process
 
-    if pipeline_task and not pipeline_task.done():
-        pipeline_task.cancel()
+    if test_case_processor_task and not test_case_processor_task.done():
+        test_case_processor_task.cancel()
         try:
-            await pipeline_task
+            await test_case_processor_task
         except asyncio.CancelledError:
             pass
 
@@ -134,17 +134,17 @@ def _archive_annotated_test_cases(old_config_id: str) -> int:
 
 
 async def refresh_on_startup_or_config_change() -> bool:
-    global feedback_config, collection, pipeline_task, pipeline_worker
+    global feedback_config, collection, test_case_processor_task, test_case_processor_worker
 
-    if pipeline_task and not pipeline_task.done():
+    if test_case_processor_task and not test_case_processor_task.done():
         logger.info("Stopping existing test case processor...")
-        pipeline_task.cancel()
+        test_case_processor_task.cancel()
         try:
-            await pipeline_task
+            await test_case_processor_task
         except asyncio.CancelledError:
             pass
-        pipeline_task = None
-        pipeline_worker = None
+        test_case_processor_task = None
+        test_case_processor_worker = None
 
     if not haize_annotations_dir:
         return False
@@ -174,16 +174,15 @@ async def refresh_on_startup_or_config_change() -> bool:
     logger.info(f"✓ Test cases ready: {test_case_counts}")
 
     logger.info("Starting test case processor...")
-    pipeline_worker = TestCaseProcessor(
+    test_case_processor_worker = TestCaseProcessor(
         test_case_collection=collection,
         feedback_config=feedback_config,
         steps=collection.get_raw_judge_inputs("step"),
         interactions=collection.get_raw_judge_inputs("interaction"),
         groups=collection.get_raw_judge_inputs("group"),
-        model_name="openai:gpt-5-nano",
     )
-    pipeline_task = asyncio.create_task(
-        pipeline_worker.run(
+    test_case_processor_task = asyncio.create_task(
+        test_case_processor_worker.run(
             poll_interval=5.0,
         )
     )
