@@ -109,12 +109,11 @@ pip install -r requirements.txt
 ```
 
 ## Next steps
-Once you've landed on an annotation experience / judge you find useful, ask claude for next steps, e.g.
-bash```
-> next steps
-> ok for next steps help me export the rubric to my current eval setup
-> ok for next steps i want to convert this to a quick web-app we can use for annotations
-```
+Once you've landed on an annotation experience / judge you find useful, ask claude for next steps:
+
+- Example: `> next steps`
+- Example: `> for next steps help me export the rubric to my current eval setup`
+- Example: `> for next steps i want to convert this to a quick web-app we can use for annotations`
 
 ## Limitations
 - Traces can't be too large - they currently have to fit in an LLM call for summarization purposes
