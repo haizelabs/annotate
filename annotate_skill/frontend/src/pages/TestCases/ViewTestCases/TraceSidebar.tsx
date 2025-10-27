@@ -288,6 +288,7 @@ const SpanContainer = ({
             {spanTreeNode.children.map((e, i) => {
               return (
                 <SpanContainer
+                  key={e.id}
                   spanTreeNode={e}
                   indent={indent + 1}
                   parent={spanTreeNode}
@@ -466,18 +467,21 @@ const TraceSidebarComponent = ({
   const stepId = isSingleStepTrace ? (interactionTrace as InteractionStep).id : null;
   const granularity = testCase.feedback_config.granularity;
 
+  const shouldFetchInteraction = isSingleStepTrace && !!stepId && granularity === "step";
+
   const { data: fullInteraction, isPending, error } = useGetInteractionForStep({
     stepId: stepId!,
-    options: { enabled: isSingleStepTrace && !!stepId && granularity === "step" },
+    options: { enabled: shouldFetchInteraction },
   });
 
-  // Use the full interaction if we fetched it, otherwise use the original trace
+
   const traceToUse = isSingleStepTrace && fullInteraction ? fullInteraction : interactionTrace;
 
   const { tree, nodeMap } = useMemo(() => parseInteractionTrace(traceToUse), [traceToUse]);
   const rootSpan = tree[0];
 
-  if (isPending) {
+
+  if (shouldFetchInteraction && isPending) {
     return (
       <div className="flex h-full flex-col gap-2 p-4 overflow-auto">
         <Skeleton className="w-full h-8" />

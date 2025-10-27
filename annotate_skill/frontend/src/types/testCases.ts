@@ -9,15 +9,14 @@ export const JudgeInput = z.object({
   id: z.string(),
   source_type: z.enum(["step", "interaction", "group"]),
   source_ids: z.array(z.string()),
-  input_items: z.array(InputItemValue),
-  raw_input: z.union([InteractionStep, Interaction, InteractionGroup]),
+  input_items: z.array(InputItemValue),  raw_input: z.union([InteractionGroup, Interaction, InteractionStep]),
 });
 
 export const PointwiseAnnotationTestCase = z.object({
   test_case_id: z.string(),
   feedback_config: FeedbackConfig,
   granularity: Granularity,
-  raw_judge_input: z.union([InteractionStep, Interaction, InteractionGroup]),
+  raw_judge_input: z.union([InteractionGroup, Interaction, InteractionStep]),
   status: TestCaseStatus,
   created_at: z.string(),
   updated_at: z.string(),

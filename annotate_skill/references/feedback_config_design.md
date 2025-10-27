@@ -20,8 +20,8 @@ Does the user need to see a single step of an interaction, the full interaction,
 Here are some boilerplate, basic examples, though it may not necessarily map to the data being annotated:
 
 - **`step`**: Individual operations (e.g., "did this LLM call use the right tool?")
-- **`interaction`**: Complete traces (e.g., "did the agent answer the user's question?")
-- **`group`**: Session-level (e.g., "did the agent help accomplish the user's goal?")
+- **`interaction`**: A single, end to end agent run (usually a single request/response cycle in a trace) (e.g., "did the agent answer the user's question?")
+- **`group`**: Session-level (usually multiple request/response traces) (e.g., "did the agent help accomplish the user's goal?", "was the user overall happy in their conversation with the agent")
 
 Sometimes, you want to evaluate at a certain granularity level (e.g llm call tool choice which is typically at the step level) but it requires some additional information an individual step doesn't have (e.g. did the tool that was called produce helpful results). For these cases, you must use the `requires_context` field of the feedback config to encode more context into the individual eval.
 

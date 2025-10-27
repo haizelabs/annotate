@@ -274,6 +274,17 @@ Handy helper: `TC_ID=$(cat /tmp/tc_id.txt) && curl -s -X POST "http://localhost:
 - YOUR GOAL, in the background, is actually to update the `ai_rubric`
 - You should be more independent and opinionated here - you are leading this annotations UX, not them. Don't ask for permission to try to record certain annotations.
 
+REMINDER!
+```
+class AnnotationRequest(BaseModel):
+    """Request to submit an annotation (human or AI) for a test case."""
+
+    annotation: Annotation = Field(
+        ...,
+        description="Annotation to submit. Type depends on the feedback spec: categorical (labels), continuous (scores), or ranking (ordering).",
+    )
+```
+
 # NEXT STEPS - annotation is going decent - what now?
 
 Once it seems like the user has landed up something satisfactory - e.g. a non-trivial annotation sample size with good alignment between them and the ai annotator - feel free to suggest looking into next steps: `references/next_steps.md` on how to turn this into a repeatable workflow wired into their live production data.
