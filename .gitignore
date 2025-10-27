@@ -30,12 +30,6 @@ ENV/
 *~
 .DS_Store
 
-# Logs and traces
-*.log
-logs/
-example_logs/
-traces/
-*/traces/
 
 # Claude Agent
 .claude/
@@ -51,11 +45,6 @@ frontend/.vite/
 frontend/coverage/
 frontend/*.local
 
-# Test data
-frontend/src/testCases/
-frontend/src/traces/
-*.jsonl
-*.ipynb
 
 # OS
 .DS_Store
