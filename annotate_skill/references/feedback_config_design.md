@@ -102,12 +102,13 @@ You'll need to configure `input_items` to extract both pieces of information:
 **Granularity:** `step`
 **Goal:** Filter for LLM steps that made tool calls
 
+**NOTE: Here, although tool choice outputs in different formats for different ai apis, we usually just json dumps that all in "content", so we use contains
 ```json
 {
   "attribute_matchers": [
     {
       "attribute_path": "output_messages[0].content",
-      "contains_str": "Tool Call"
+      "contains_str": "tool_use"
     },
     {
       "attribute_path": "model",
@@ -121,41 +122,14 @@ You'll need to configure `input_items` to extract both pieces of information:
 
 ---
 
-#### Use Case 3: Multi-Turn Conversations - Evaluating Final Response
-
-**Scenario:** You want to evaluate the quality of complete conversations with users.
-
-**Granularity:** `interaction`
-**Goal:** Filter for specific types of conversations (e.g., customer support)
-
-```json
-{
-  "attribute_matchers": [
-    {
-      "attribute_path": "tags.conversation_type",
-      "equals_value": "user_support"
-    },
-    {
-      "attribute_path": "steps",
-      "matches_regex": ".*"
-    }
-  ]
-}
-```
-
-**Why this works:** First matcher ensures we only look at interactions tagged as "user_support". Second ensures the interaction has at least some steps (non-empty). This filters out irrelevant conversation types while ensuring complete interactions.
-
-**Note:** Make sure your ingestion script populates `tags` appropriately for this to work.
-
----
-
 #### Use Case 4: Code Generation - Evaluating Correctness
 
 **Scenario:** You want to evaluate if generated code is correct and follows best practices.
 
 **Granularity:** `step`
-**Goal:** Filter for code generation steps in a specific programming language
+**Goal:** Filter for python code generation steps from a coding agent
 
+**of course, assumes output_data.language exists
 ```json
 {
   "attribute_matchers": [
@@ -176,28 +150,6 @@ You'll need to configure `input_items` to extract both pieces of information:
 **Alternative:** If you want ALL programming languages, remove the second matcher.
 
 ---
-
-#### Use Case 5: Agentic Workflows - Evaluating Planning
-
-**Scenario:** You want to evaluate if your agent created a good execution plan.
-
-**Granularity:** `interaction`
-**Goal:** Filter for interactions that involve planning/strategy
-
-```json
-{
-  "attribute_matchers": [
-    {
-      "attribute_path": "name",
-      "matches_regex": ".*plan.*|.*strategy.*"
-    },
-    {
-      "attribute_path": "metadata.tags",
-      "contains_str": "agent"
-    }
-  ]
-}
-```
 
 **Why this works:** First matcher uses regex to capture interactions with "plan" or "strategy" in their name (case-insensitive). Second ensures it's agent-related by checking metadata tags. This filters for planning phases of agent execution.
 

@@ -2,11 +2,8 @@ from __future__ import annotations
 import statistics
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-
-from ._models import AnnotationSpec, FeedbackConfigStats, TestCase
-import os
-
 import json
+import os
 from enum import Enum
 from typing import Optional, Union
 
@@ -15,11 +12,13 @@ from pydantic_ai import Agent
 
 from ._models import (
     Annotation,
+    AnnotationSpec,
     AttributeMatcher,
     CategoricalAnnotation,
     CategoricalPointwiseSpec,
     ContinuousAnnotation,
     ContinuousPointwiseSpec,
+    FeedbackConfigStats,
     InputItem,
     InputItemValue,
     Interaction,
@@ -29,6 +28,7 @@ from ._models import (
     RankingAnnotation,
     RankingSpec,
     Reference,
+    TestCase,
     TestCaseStatus,
 )
 
@@ -440,6 +440,142 @@ async def create_ai_annotation(
     return annotation
 
 
+def _calculate_pearson_correlation(values_a: list[float], values_b: list[float]) -> float | None:
+    """Calculate Pearson correlation coefficient between two lists of values."""
+    if len(values_a) != len(values_b) or len(values_a) == 0:
+        return None
+    
+    mean_a = statistics.mean(values_a)
+    mean_b = statistics.mean(values_b)
+    
+    numerator = sum((a - mean_a) * (b - mean_b) for a, b in zip(values_a, values_b))
+    denom_a = sum((a - mean_a) ** 2 for a in values_a) ** 0.5
+    denom_b = sum((b - mean_b) ** 2 for b in values_b) ** 0.5
+    
+    if denom_a == 0 or denom_b == 0:
+        return None
+    
+    return numerator / (denom_a * denom_b)
+
+
+def _calculate_mae(values_a: list[float], values_b: list[float]) -> float:
+    """Calculate Mean Absolute Error between two lists of values."""
+    return sum(abs(a - b) for a, b in zip(values_a, values_b)) / len(values_a)
+
+
+def _compute_ranking_stats(
+    dual_annotated: list[TestCase],
+    stats: FeedbackConfigStats,
+) -> tuple[int, int, list[tuple[datetime, str]]]:
+    """Compute statistics for ranking annotations."""
+    agreements = 0
+    disagreements = 0
+    disagreed_ids = []
+    
+    ai_rankings = []
+    human_rankings = []
+
+    for tc in dual_annotated:
+        ai_rank = tc.ai_annotation.rankings
+        human_rank = tc.human_annotation.rankings
+
+        if ai_rank and human_rank and len(ai_rank) == len(human_rank):
+            ai_rankings.append(ai_rank)
+            human_rankings.append(human_rank)
+
+            if ai_rank == human_rank:
+                agreements += 1
+            else:
+                disagreements += 1
+                disagreed_ids.append((tc.human_annotation.timestamp, tc.test_case_id))
+
+    if ai_rankings and human_rankings:
+        correlations = []
+        for ai_rank, human_rank in zip(ai_rankings, human_rankings):
+            corr = _calculate_pearson_correlation(ai_rank, human_rank)
+            if corr is not None:
+                correlations.append(corr)
+
+        if correlations:
+            stats.correlation = sum(correlations) / len(correlations)
+    
+    return agreements, disagreements, disagreed_ids
+
+
+def _compute_categorical_stats(
+    dual_annotated: list[TestCase],
+    stats: FeedbackConfigStats,
+) -> tuple[int, int, list[tuple[datetime, str]]]:
+    """Compute statistics for categorical annotations."""
+    agreements = 0
+    disagreements = 0
+    disagreed_ids = []
+    
+    ai_categories = []
+    human_categories = []
+    confusion = defaultdict(lambda: defaultdict(int))
+
+    for tc in dual_annotated:
+        ai_cat = tc.ai_annotation.category
+        human_cat = tc.human_annotation.category
+
+        ai_categories.append(ai_cat)
+        human_categories.append(human_cat)
+
+        if ai_cat == human_cat:
+            agreements += 1
+        else:
+            disagreements += 1
+            disagreed_ids.append((tc.human_annotation.timestamp, tc.test_case_id))
+
+        confusion[ai_cat][human_cat] += 1
+
+    stats.ai_category_distribution = dict(Counter(ai_categories))
+    stats.human_category_distribution = dict(Counter(human_categories))
+    stats.confusion_matrix = {k: dict(v) for k, v in confusion.items()}
+    
+    return agreements, disagreements, disagreed_ids
+
+
+def _compute_continuous_stats(
+    dual_annotated: list[TestCase],
+    stats: FeedbackConfigStats,
+) -> tuple[int, int, list[tuple[datetime, str]]]:
+    """Compute statistics for continuous annotations."""
+    agreements = 0
+    disagreements = 0
+    disagreed_ids = []
+    
+    ai_scores = []
+    human_scores = []
+
+    for tc in dual_annotated:
+        ai_score = tc.ai_annotation.score
+        human_score = tc.human_annotation.score
+
+        if ai_score is not None and human_score is not None:
+            ai_scores.append(ai_score)
+            human_scores.append(human_score)
+
+            # For continuous, we consider agreement if within 10% of range
+            score_range = tc.ai_annotation.score_range
+            tolerance = (score_range[1] - score_range[0]) * 0.1
+
+            if abs(ai_score - human_score) <= tolerance:
+                agreements += 1
+            else:
+                disagreements += 1
+                disagreed_ids.append((tc.human_annotation.timestamp, tc.test_case_id))
+
+    if ai_scores and human_scores:
+        stats.mean_absolute_error = _calculate_mae(ai_scores, human_scores)
+        
+        if len(ai_scores) > 1:
+            stats.correlation = _calculate_pearson_correlation(ai_scores, human_scores)
+    
+    return agreements, disagreements, disagreed_ids
+
+
 def compute_feedback_config_stats(
     test_cases: list[TestCase], feedback_spec: AnnotationSpec
 ) -> FeedbackConfigStats:
@@ -451,6 +587,16 @@ def compute_feedback_config_stats(
     stats.ai_annotated = status_counts.get(TestCaseStatus.AI_ANNOTATED, 0)
     stats.human_annotated = status_counts.get(TestCaseStatus.HUMAN_ANNOTATED, 0)
     stats.invalid = status_counts.get(TestCaseStatus.INVALID, 0)
+    
+    total_statused = sum([
+        stats.pending, stats.summarized, stats.ai_annotated, 
+        stats.human_annotated, stats.invalid
+    ])
+    if total_statused != stats.total_test_cases:
+        raise ValueError(
+            f"Status count mismatch: {total_statused} statused test cases "
+            f"but {stats.total_test_cases} total test cases"
+        )
 
     dual_annotated = [
         tc
@@ -466,131 +612,15 @@ def compute_feedback_config_stats(
     if not dual_annotated:
         return stats
 
-    agreements = 0
-    disagreements = 0
-    disagreed_ids = []
-
+    # Compute type-specific statistics
     if feedback_spec.type == "ranking":
-        ai_rankings = []
-        human_rankings = []
-
-        for tc in dual_annotated:
-            ai_rank = tc.ai_annotation.rankings
-            human_rank = tc.human_annotation.rankings
-
-            if ai_rank and human_rank and len(ai_rank) == len(human_rank):
-                ai_rankings.append(ai_rank)
-                human_rankings.append(human_rank)
-
-                if ai_rank == human_rank:
-                    agreements += 1
-                else:
-                    disagreements += 1
-                    disagreed_ids.append(
-                        (tc.human_annotation.timestamp, tc.test_case_id)
-                    )
-
-        if ai_rankings and human_rankings:
-            kendall_taus = []
-            for ai_rank, human_rank in zip(ai_rankings, human_rankings):
-                n = len(ai_rank)
-                concordant = 0
-                discordant = 0
-
-                for i in range(n):
-                    for j in range(i + 1, n):
-                        ai_i_idx = ai_rank.index(i) if i in ai_rank else None
-                        ai_j_idx = ai_rank.index(j) if j in ai_rank else None
-                        human_i_idx = human_rank.index(i) if i in human_rank else None
-                        human_j_idx = human_rank.index(j) if j in human_rank else None
-
-                        if all(
-                            idx is not None
-                            for idx in [ai_i_idx, ai_j_idx, human_i_idx, human_j_idx]
-                        ):
-                            ai_order = ai_i_idx < ai_j_idx
-                            human_order = human_i_idx < human_j_idx
-
-                            if ai_order == human_order:
-                                concordant += 1
-                            else:
-                                discordant += 1
-
-                total_pairs = concordant + discordant
-                if total_pairs > 0:
-                    tau = (concordant - discordant) / total_pairs
-                    kendall_taus.append(tau)
-
-            if kendall_taus:
-                stats.correlation = sum(kendall_taus) / len(kendall_taus)
-
+        agreements, disagreements, disagreed_ids = _compute_ranking_stats(dual_annotated, stats)
     elif feedback_spec.type == "categorical":
-        ai_categories = []
-        human_categories = []
-        confusion = defaultdict(lambda: defaultdict(int))
-
-        for tc in dual_annotated:
-            ai_cat = tc.ai_annotation.category
-            human_cat = tc.human_annotation.category
-
-            ai_categories.append(ai_cat)
-            human_categories.append(human_cat)
-
-            if ai_cat == human_cat:
-                agreements += 1
-            else:
-                disagreements += 1
-                disagreed_ids.append((tc.human_annotation.timestamp, tc.test_case_id))
-
-            confusion[ai_cat][human_cat] += 1
-
-        stats.ai_category_distribution = dict(Counter(ai_categories))
-        stats.human_category_distribution = dict(Counter(human_categories))
-        stats.confusion_matrix = {k: dict(v) for k, v in confusion.items()}
-
+        agreements, disagreements, disagreed_ids = _compute_categorical_stats(dual_annotated, stats)
     elif feedback_spec.type == "continuous":
-        ai_scores = []
-        human_scores = []
-
-        for tc in dual_annotated:
-            ai_score = tc.ai_annotation.score
-            human_score = tc.human_annotation.score
-
-            if ai_score is not None and human_score is not None:
-                ai_scores.append(ai_score)
-                human_scores.append(human_score)
-
-                # For continuous, we consider agreement if within 10% of range
-                score_range = tc.ai_annotation.score_range
-                tolerance = (score_range[1] - score_range[0]) * 0.1
-
-                if abs(ai_score - human_score) <= tolerance:
-                    agreements += 1
-                else:
-                    disagreements += 1
-                    disagreed_ids.append(
-                        (tc.human_annotation.timestamp, tc.test_case_id)
-                    )
-
-        if ai_scores and human_scores:
-            mae = sum(abs(a - h) for a, h in zip(ai_scores, human_scores)) / len(
-                ai_scores
-            )
-            stats.mean_absolute_error = mae
-            if len(ai_scores) > 1:
-                mean_ai = statistics.mean(ai_scores)
-                mean_human = statistics.mean(human_scores)
-
-                numerator = sum(
-                    (a - mean_ai) * (h - mean_human)
-                    for a, h in zip(ai_scores, human_scores)
-                )
-
-                denom_ai = sum((a - mean_ai) ** 2 for a in ai_scores) ** 0.5
-                denom_human = sum((h - mean_human) ** 2 for h in human_scores) ** 0.5
-
-                if denom_ai > 0 and denom_human > 0:
-                    stats.correlation = numerator / (denom_ai * denom_human)
+        agreements, disagreements, disagreed_ids = _compute_continuous_stats(dual_annotated, stats)
+    else:
+        agreements, disagreements, disagreed_ids = 0, 0, []
 
     total_compared = agreements + disagreements
     if total_compared > 0:

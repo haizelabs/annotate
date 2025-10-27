@@ -272,8 +272,6 @@ def main():
 
     print_results(results)
 
-    raise ValueError("Validation failed")
-
 
 if __name__ == "__main__":
     main()
