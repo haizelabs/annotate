@@ -649,9 +649,6 @@ def compute_feedback_config_stats(
     disagreed_ids.sort()
     stats.disagreed_test_case_ids = [test_case_id for _, test_case_id in disagreed_ids]
 
-    if dual_annotated and dual_annotated[0].ai_annotation:
-        stats.ai_model = dual_annotated[0].ai_annotation.annotator_id
-
     stats.last_updated = datetime.now(timezone.utc)
 
     return stats
