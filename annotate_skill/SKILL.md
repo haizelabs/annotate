@@ -134,6 +134,8 @@ This will:
 
 **Critical validation step!** Always validate the ingested data is as expected before continuing using a combination of:
 - `scripts/run_validate_ingested_data.py` (very quick, high level stats)
+- e.g. `cd <path-to>/skills/annotate_skill && python -m scripts.run_validate_ingested_data
+   --ingested-dir <path-to>/.haize_annotations/ingested_data/interactions`
 - manually reading the data!!! this is important and helps you verify the data shape is what you expected
 
 You **might** need to come back to this later, in case anything with the way we've ingested the data makes giving feedback on agent traces difficult.
@@ -240,7 +242,7 @@ This endpoint will return basic validation information; it's a good idea, though
 
 ---
 
-**Note:** After the feedback config is designed, it will take a bit for test cases to be generated, processed, AI annotated, and then finally ready for human annotations.
+**Note:** After the feedback config is designed, it will take a bit for test cases to be generated, processed, AI annotated, and then finally ready for human annotations. Feel free to start annotating when there are at **any** test cases that are AI annotated! 
 
 ---
 
@@ -305,6 +307,9 @@ In general; heavy lifting / setup details should happen silently in the backgrou
 **LAST REMINDERS:**
 - If you have a bunch of stuff you need to ask the user, get all of that info at once or in rapid succession. Do not make the user wait a long time while you do other stuff.
 - Then, it's ok if you go off and do multiple steps autonomously
+- DO NOT ask boiler plate questions that are contextual to the VERY SPECIFIC use case of the ai application
+e.g. > "would you like to annotate agent traces or llm calls" <- BAD! what does this even mean
+     > "i see the traces here represent a research agent with query generaton and web result summarization steps, which step would you like to review? or would you like to review the whole process end to end --> provide multiple choice etc etc." <- Better - contextual! even better if we get domain specific
 
 **WARNING:** FILE SIZES CAN GET LARGE!! Both for raw trace files, normalized interactions, and test cases. Approach smartly and CHECK FILE SIZES/read chunk by chunk instead of trying to go in blind to load it all at once. 
 

@@ -29,8 +29,8 @@ mv annotate/annotate_skill ~/.claude/skills/annotate_skill
 cd ~/.claude/skills/annotate_skill
 
 # Install dependencies
-pip install -r requirements.txt
-cd frontend && yarn install && cd ..
+uv pip install -r requirements.txt
+cd frontend && yarn install
 ```
 
 ### 2. Navigate to a directory with agent traces
