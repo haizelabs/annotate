@@ -63,10 +63,11 @@ export const AnnotationSpec = z.discriminatedUnion("type", [
 
 export const BaseAnnotation = z.object({
   annotation_id: z.string(),
+  test_case_id: z.string(),
   annotator_id: z.string(),
   timestamp: z.coerce.date(),
   skip: z.boolean(),
-  comment: z.string().optional(),
+  comment: z.string().nullable(),
 });
 
 export const RankingAnnotation = RankingSpec.extend(BaseAnnotation.shape).extend({
@@ -78,7 +79,7 @@ export const CategoricalAnnotation = CategoricalPointwiseSpec.extend(BaseAnnotat
 });
 
 export const ContinuousAnnotation = ContinuousPointwiseSpec.extend(BaseAnnotation.shape).extend({
-  score: z.number(),
+  score: z.number().nullable(),
 });
 
 export const Annotation = z.discriminatedUnion("type", [

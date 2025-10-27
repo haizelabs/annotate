@@ -295,7 +295,7 @@ async def get_feedback_config() -> GetFeedbackConfigResponse:
     return GetFeedbackConfigResponse(config=feedback_config)
 
 
-@app.get("/interaction/{step_id}")
+@app.get("/{step_id}/interaction")
 async def get_interaction_for_step(step_id: str) -> Interaction:
     """Get the interaction for a specific step."""
     interaction_step = next(

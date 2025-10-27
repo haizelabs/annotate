@@ -6,9 +6,9 @@ export const Message = z.object({
 });
 
 export const TokenUsage = z.object({
-  input_tokens: z.number().nullable(),
-  output_tokens: z.number().nullable(),
-  total_tokens: z.number().nullable(),
+  input_tokens: z.number().nullish(),
+  output_tokens: z.number().nullish(),
+  total_tokens: z.number().nullish(),
 });
 
 export type Message = z.infer<typeof Message>;

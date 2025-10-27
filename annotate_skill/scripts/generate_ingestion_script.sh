@@ -75,7 +75,7 @@ cat >> "$OUTPUT_FILE" << 'EOF'
 # =============================================================================
 
 
-def ingest(folder_path: str) -> dict[str, Interaction]:
+def ingest(folder_path: str) -> list[Interaction]:
     """
     Convert raw traces from folder_path into normalized Interaction objects.
 
@@ -89,11 +89,11 @@ def ingest(folder_path: str) -> dict[str, Interaction]:
         folder_path: Path to directory containing raw trace files
 
     Returns:
-        Dictionary mapping interaction_id -> Interaction object
+        List of Interaction objects
 
     Example structure:
-        {
-            "trace_abc123": Interaction(
+        [
+            Interaction(
                 id="trace_abc123",
                 name="User request",
                 steps=[
@@ -103,7 +103,7 @@ def ingest(folder_path: str) -> dict[str, Interaction]:
                 ...
             ),
             ...
-        }
+        ]
     """
     # TODO: Implement your custom ingestion logic here!
     #
@@ -112,7 +112,7 @@ def ingest(folder_path: str) -> dict[str, Interaction]:
     # - Parse each file and extract span/event data
     # - Create InteractionStep for each span
     # - Group steps by trace_id/conversation_id into Interactions
-    # - Return dict[interaction_id, Interaction]
+    # - Return list[Interaction]
 
     raise NotImplementedError(
         "Please implement the ingest() function based on your trace format. "
@@ -144,7 +144,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # Call user's ingest function
+    # Call generated ingest function
     print(f"Loading and normalizing traces from {args.input}...")
     try:
         interactions = ingest(args.input)
@@ -161,8 +161,8 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for interaction_id, interaction in interactions.items():
-        interaction_path = output_dir / interaction_id
+    for interaction in interactions:
+        interaction_path = output_dir / interaction.id
         interaction.save(str(interaction_path))
 
     print(f"\nComplete! Saved {len(interactions)} interactions to {output_dir}")

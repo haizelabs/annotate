@@ -464,10 +464,11 @@ const TraceSidebarComponent = ({
 }) => {
   const isSingleStepTrace = isSingleStep(interactionTrace);
   const stepId = isSingleStepTrace ? (interactionTrace as InteractionStep).id : null;
+  const granularity = testCase.feedback_config.granularity;
 
   const { data: fullInteraction, isPending, error } = useGetInteractionForStep({
     stepId: stepId!,
-    options: { enabled: isSingleStepTrace && !!stepId },
+    options: { enabled: isSingleStepTrace && !!stepId && granularity === "step" },
   });
 
   // Use the full interaction if we fetched it, otherwise use the original trace
@@ -533,7 +534,6 @@ const PairwiseTraceSidebarComponent = ({
     options: { enabled: isSingleStepTrace && !!stepId },
   });
 
-  // Use the full interaction if we fetched it, otherwise use the original trace
   const traceToUse = isSingleStepTrace && fullInteraction ? fullInteraction : interactionTrace;
 
   const { tree, nodeMap } = useMemo(() => parseInteractionTrace(traceToUse), [traceToUse]);

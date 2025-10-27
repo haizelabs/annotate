@@ -13,15 +13,13 @@ export const AttributeMatcher = z.object({
 export const FeedbackConfig = z.object({
   id: z.string(),
   granularity: Granularity,
-  disqualification_criteria: z.string().nullable(),
-  requires_context: z.literal([Granularity.enum.group, Granularity.enum.interaction]).nullable(),
+  requires_context: Granularity.nullable(),
   feedback_spec: AnnotationSpec,
   input_items: z.array(InputItem),
   ai_rubric: z.string(),
   attribute_matchers: z.array(AttributeMatcher),
   natural_language_disqualifier: z.string().nullable(),
-  interaction_join_id: z.string().optional(),
-  group_join_id: z.string().optional(),
+  stats: z.any().nullable().optional(),
 });
 
 export const FeedbackConfigState = z.object({

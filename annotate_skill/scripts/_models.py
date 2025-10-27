@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 import ast
+from pathlib import Path
 
 
 def _extract_fstring_variables(fstring: str) -> list[str]:
@@ -116,23 +117,18 @@ class Interaction(BaseModel):
 
     def save(self, path: str) -> None:
         """
-        Save interaction to filesystem directory structure:
-        {path}/
+        {interaction_id}/
           ├── metadata.json  (all fields except steps)
           └── steps.jsonl    (one InteractionStep per line)
         """
-        from pathlib import Path
-        import json
 
         interaction_dir = Path(path)
         interaction_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save metadata (everything except steps)
         metadata = self.model_dump(exclude={"steps"}, mode="json")
         with open(interaction_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-        # Save steps as JSONL
         with open(interaction_dir / "steps.jsonl", "w") as f:
             for step in self.steps:
                 f.write(json.dumps(step.model_dump(mode="json")) + "\n")

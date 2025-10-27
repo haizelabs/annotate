@@ -133,7 +133,7 @@ This will:
 ### Step 4: Review Normalized Output
 
 **Critical validation step!** Always validate the ingested data is as expected before continuing using a combination of:
-- `scripts/run_validate_ingested_data.py` (very quick, high level stats)
+- `scripts/run_validate_ingested_data.py` (very quick, high level stats) (must be run as a module!!)
 - e.g. `cd <path-to>/skills/annotate_skill && python -m scripts.run_validate_ingested_data
    --ingested-dir <path-to>/.haize_annotations/ingested_data/interactions`
 - manually reading the data!!! this is important and helps you verify the data shape is what you expected
@@ -259,6 +259,7 @@ from the user as possible while minimizing effort & time from the human.
 **START OFF WITH THIS WORKFLOW** (unless the user expresses preferences otherwise / you have a reason not to, this is a good default):
 - Call the `/api/test-cases/next` endpoint to get the next test case that's ready to be annotated
 - Call the `POST /api/test-cases/{test_case_id}/visualize` endpoint to open the test case in the browser for the user to see
+Handy helper: `TC_ID=$(cat /tmp/tc_id.txt) && curl -s -X POST "http://localhost:<backend-port>/api/test-cases/$TC_ID/visualize"`
 
 **IMPORTANT:** DO NOT call `open` manually on any endpoint - always POST to the visualize endpoint.
 
