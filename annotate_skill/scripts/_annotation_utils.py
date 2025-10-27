@@ -637,8 +637,6 @@ def compute_feedback_config_stats(
         agreements, disagreements, disagreed_ids = _compute_continuous_stats(
             dual_annotated, stats
         )
-    else:
-        agreements, disagreements, disagreed_ids = 0, 0, []
 
     total_compared = agreements + disagreements
     if total_compared > 0:

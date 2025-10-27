@@ -26,7 +26,6 @@ export const FeedbackConfig = z.object({
 
 export const FeedbackConfigState = z.object({
   feedback_config: FeedbackConfig,
-  ai_model_name: z.string(),
   ai_rubric: z.string(),
 });
 
