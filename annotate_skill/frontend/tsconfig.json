@@ -7,6 +7,7 @@
     "jsx": "react",
     "baseUrl": "./",
     "paths": {
+      "@/assets/*": ["public/assets/*"],
       "@app/assets/*": ["public/assets/*"],
       "@app/*": ["src/*"],
       "@/*": ["./src/*"]
