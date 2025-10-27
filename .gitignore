@@ -45,6 +45,9 @@ frontend/.vite/
 frontend/coverage/
 frontend/*.local
 
+# Test data
+frontend/src/testCases/
+frontend/src/traces/
 
 # OS
 .DS_Store
