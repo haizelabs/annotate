@@ -12,17 +12,8 @@ from ._models import (
 )
 
 
-class CreateTestCaseRequest(BaseModel):
-    """Request to create a new test case for annotation."""
-
-    test_case: PointwiseAnnotationTestCase | RankingAnnotationTestCase = Field(
-        ...,
-        description="Test case to create. Can be either pointwise (single item evaluation) or ranking (comparison of multiple items).",
-    )
-
-
 class AnnotationRequest(BaseModel):
-    """Request to submit an annotation (human or AI) for a test case."""
+    """Submit a human annotation for a test case."""
 
     annotation: Annotation = Field(
         ...,
@@ -31,7 +22,7 @@ class AnnotationRequest(BaseModel):
 
 
 class FeedbackConfigRequest(BaseModel):
-    """Request to create or update the active feedback configuration."""
+    """Create or update the active feedback configuration."""
 
     config: FeedbackConfig = Field(
         ...,
@@ -126,7 +117,7 @@ class StatusCounts(BaseModel):
 
 
 class StatsResponse(BaseModel):
-    """Response from getting annotation statistics."""
+    """Get annotation progress stats and ai/human agreement metrics."""
 
     status_counts: StatusCounts = Field(description="Counts of test cases by status")
     comprehensive_stats: Optional[FeedbackConfigStats] = Field(

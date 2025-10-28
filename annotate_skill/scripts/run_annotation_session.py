@@ -332,10 +332,10 @@ async def get_next_test_case() -> NextTestCaseResponse:
 
     Returns the oldest `ai_annotated` test case.
 
-    Treat this as a dice roll for test case (s) to present to the user
+    Treat this as a dice roll for test case(s) to present to the user
     if they have no particular preference on what they want to see.
 
-    Otherwise, feel free to do more targeted scans of test cases directory
+    Otherwise, feel free to do more targeted scans of the test cases directory
     or use the search endpoint.
     """
     ai_annotated = collection.get_by_status(TestCaseStatus.AI_ANNOTATED)
@@ -360,7 +360,7 @@ async def get_next_test_case() -> NextTestCaseResponse:
     "/api/test-cases/{test_case_id}/visualize", response_model=VisualizeTestCaseResponse
 )
 async def visualize_test_case_for_human(test_case_id: str) -> VisualizeTestCaseResponse:
-    """Open test case in browser"""
+    """Open test case in browser."""
     try:
         collection.get_test_case(test_case_id)
     except ValueError:
@@ -419,7 +419,7 @@ def main():
     parser.add_argument(
         "--haize-annotations-dir",
         required=True,
-        help="Haize annotations directory. Will be created if doesn't exist",
+        help="Haize annotations directory. Will be created if it doesn't exist",
     )
     parser.add_argument(
         "--source-data-directory",

@@ -18,7 +18,7 @@ It's good to port over the contents of the source data tags as a starting point,
 useful in tags.
 
 In particular, we are interested in fields that help filter for relevant evaluation data. For example if you see a common pattern in a span that indicates it's an LLM call use for summarization, feel free to add a "is_summarizer = true" tag. When it later comes to evaluation and the user wants to only eval summarizer llm calls, this will come in handy. Similarly, if you see a bunch of noisy steps
-(e.g. spans representing pydantic validation steps) feel free to add "noisy:true" tag. 
+(e.g., spans representing Pydantic validation steps), feel free to add a "noisy:true" tag. 
 
 Its a good idea to look at scripts/_models.py:
 ```
@@ -35,13 +35,13 @@ status: ok, error
 span_kind: tool, llm, agent
 
 
-Another principle - DO NOT uncessarily skip data thats a different format, e.g. a trace json thats different from the normal span json. Find a way to incorporate as much as data as possible; e.g. by holding onto trace jsons and populating some info in the Interaction metadata even if it doesn't directly map to an interaction step.
+Another principle - DO NOT unnecessarily skip data that's in a different format, e.g., a trace JSON that's different from the normal span JSON. Find a way to incorporate as much data as possible; e.g., by holding onto trace JSONs and populating some info in the Interaction metadata even if it doesn't directly map to an interaction step.
 
 ---
 
 ## Possible raw data formats and **potential** ingestion approaches
 
-this is a non-exhaustive list of common raw data formats. again, even if the data format is the same (e.g. otel) the shape
+This is a non-exhaustive list of common raw data formats. Again, even if the data format is the same (e.g., OTel), the shape
 of the ai application can wildly vary - so make sure your approach is contextual to the specific data you are seeing.
 
 **GENERAL PRINCIPLE** --> be super defensive only as a last resort to unblock yourself after 2 tries. otherwise, it is ok
