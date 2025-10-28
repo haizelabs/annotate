@@ -23,7 +23,7 @@ Here are some boilerplate, basic examples, though it may not necessarily map to 
 - **`interaction`**: A single, end to end agent run (usually a single request/response cycle in a trace) (e.g., "did the agent answer the user's question?")
 - **`group`**: Session-level (usually multiple request/response traces) (e.g., "did the agent help accomplish the user's goal?", "was the user overall happy in their conversation with the agent")
 
-Sometimes, you want to evaluate at a certain granularity level (e.g llm call tool choice which is typically at the step level) but it requires some additional information an individual step doesn't have (e.g. did the tool that was called produce helpful results). For these cases, you must use the `requires_context` field of the feedback config to encode more context into the individual eval.
+Sometimes, you want to evaluate at a certain granularity level (e.g., LLM call tool choice which is typically at the step level) but it requires some additional information an individual step doesn't have (e.g., did the tool that was called produce helpful results). For these cases, you must use the `requires_context` field of the feedback config to encode more context into the individual eval.
 
 In most LLM applications, "step" based evals will be similar to analyzing some sub-component of that AI application, while interaction/group based evals are more like end to end evaluations.
 
@@ -36,7 +36,7 @@ in the first place. For this, we use attribute matchers. You can check out how t
 
 Add `attribute_matchers` to filter relevant data (optional).
 
-This will REQUIRE that the data we evaluate matches a certain pattern you enforce; e.g. the step name must contain "generation".
+This will REQUIRE that the data we evaluate matches a certain pattern you enforce; e.g., the step name must contain "generation".
 
 **Think carefully for this one!! And definitely get feedback from the user if you are unsure**
 - Throwing random attributes here will result in **LOTS of false negatives** and data being excluded
@@ -45,7 +45,7 @@ This will REQUIRE that the data we evaluate matches a certain pattern you enforc
 Attribute matchers are also a dependent on GRANULARITY - pay attention to this! If the granularity is at the interaction level, do not
 write a matcher that assumes field paths of steps.
 
-If the source data is CLEAN - e.g. comes from a dataset explicitly for evals, you probably don't need to use this. If the source
+If the source data is CLEAN - e.g., comes from a dataset explicitly for evals, you probably don't need to use this. If the source
 data comes from wild west trace data that has a bunch of other traces/logs that are not super ai related, you probably will need to use this.
 
 ### AttributeMatcher Examples for Common Use Cases

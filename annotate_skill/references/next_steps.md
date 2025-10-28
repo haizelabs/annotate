@@ -11,7 +11,7 @@ If you find the rubric useful, we'll want to translate this pipeline to a repeat
 
 This may require:
 - A 2-step LLM-as-a-judge setup (extract then judge)
-- Defining a more deterministic flow, e.g. extract XYZ fields from the raw trace data
+- Defining a more deterministic flow, e.g., extract XYZ fields from the raw trace data
 
 For this, confirm with the user:
 1. What library/unit testing setup they are most comfortable with
@@ -34,7 +34,7 @@ The user may also want to take inspiration from the particular annotation UX the
 
 As a reminder, the variable components are:
 - **Granularity:** What level of their data do they want to annotate (`granularity` - step vs interaction vs interaction group)?
-- **Aspects:** What specific aspects of their agent logs do they want to annotate (e.g. AI rubric prompt variables)?
+- **Aspects:** What specific aspects of their agent logs do they want to annotate (e.g., AI rubric prompt variables)?
 - **Output format:** What is the result of this annotation (ranking vs pointwise (categorical | continuous))?
 
 **More open-ended questions you may have done discovery on / should ask the user about:**
@@ -42,9 +42,8 @@ As a reminder, the variable components are:
 - Perhaps the data is very involved and the user needs to spend multiple minutes even on a single agent interaction - an interface that supports deep analysis and multiple places to comment would be helpful for this
 - and more...
 
-As you can see, the particular annotation interface is completely open-ended. The `frontend` directory under the root skill directory provides a starting point with some UI components to visualize multiple levels of granularity of AI interactions. There's also variability in terms of how data is fed into the annotations ux (they probably dont want to depend on our data models). Take inspiration from these components and iterate with the annotator to polish a bespoke UX ideal for their use case.
+As you can see, the particular annotation interface is completely open-ended. The `frontend` directory under the root skill directory provides a starting point with some UI components to visualize multiple levels of granularity of AI interactions. There's also variability in terms of how data is fed into the annotations UX (they probably don't want to depend on our data models). Take inspiration from these components and iterate with the annotator to polish a bespoke UX ideal for their use case.
 
 
 ### MOST IMPORTANTLY
-Do not jump the gun here; very clearly make sure you and the user are aligned on the final result. DO NOT just try to get something working, e.g. a random eval script
-that just happens to be using the framework they want. We want to carefully think about how to integrate all the work we've done into an *actual setup* that is useful.
+Do not jump the gun here; very clearly make sure you and the user are aligned on the final result. DO NOT just try to get something working, e.g., a random eval script that just happens to be using the framework they want. We want to carefully think about how to integrate all the work we've done into an *actual setup* that is useful.
