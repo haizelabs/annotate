@@ -117,7 +117,7 @@ class StatusCounts(BaseModel):
 
 
 class StatsResponse(BaseModel):
-    """Response from getting annotation statistics."""
+    """Get annotation progress stats and ai/human agreement metrics."""
 
     status_counts: StatusCounts = Field(description="Counts of test cases by status")
     comprehensive_stats: Optional[FeedbackConfigStats] = Field(
