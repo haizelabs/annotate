@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -336,45 +335,6 @@ class TestCaseCollection:
     def get_test_cases_by_config(self, config_id: str) -> list[TestCase]:
         """Get all test cases for a specific config ID."""
         return [tc for tc in self._load_all() if tc.feedback_config.id == config_id]
-
-    def cleanup_for_config(self, current_config_id: str) -> int:
-        """Remove all test cases that don't belong to the current config.
-
-        Returns the number of orphaned test cases deleted.
-        """
-        all_test_cases = self._load_all()
-        orphaned = [
-            tc for tc in all_test_cases if tc.feedback_config.id != current_config_id
-        ]
-
-        deleted_count = 0
-        for tc in orphaned:
-            tc_file = self.dir / f"tc_{tc.test_case_id}.json"
-            if tc_file.exists():
-                tc_file.unlink()
-                deleted_count += 1
-
-        return deleted_count
-
-    def archive_for_config(self, config_id: str, archive_dir: Path) -> int:
-        """Move all test cases for a config to the archive directory.
-
-        Returns the number of test cases archived.
-        """
-        test_cases = self.get_test_cases_by_config(config_id)
-        if not test_cases:
-            return 0
-
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        archived_count = 0
-        for tc in test_cases:
-            tc_file = self.dir / f"tc_{tc.test_case_id}.json"
-            if tc_file.exists():
-                archive_file = archive_dir / f"tc_{tc.test_case_id}.json"
-                shutil.move(str(tc_file), str(archive_file))
-                archived_count += 1
-
-        return archived_count
 
     def _find(self, test_case_id: str) -> TestCase:
         """Internal method to find a test case by ID (for backward compatibility)."""

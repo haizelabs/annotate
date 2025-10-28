@@ -12,8 +12,8 @@ The AI judge we are iterating on has the following components.
 
 ### Judge Outputs
 - **Labels**: Numeric or categorical values (often ordered by "goodness": good, neutral, bad)
-- **Comment**: An open-ended, free text comment for the judge; could be rationale for the label, could be something else
-- **Option to skip**: AI/human annotators can always skip a test case for whatever reason
+- **Comment**: An open ended, free text comment for the judge; could be rationale for the label, could be something else
+- **Option to skip**: ai/human annotators can always skip a test case for whatever reason
 
 ### Judge Inputs
 - **Static instructions**: Define the judge's purpose, high-level principles, and meanings of each output label
@@ -58,7 +58,7 @@ Mark as 'correct' if:
 - The answer directly addresses the question AND uses accurate information
 
 Mark as 'partially_correct' if:
-- The answer is directionally correct but is missing key details OR
+- The answer is directionally correct but missing key details OR
 - The answer is correct but uses information not in the provided context
 
 Mark as 'incorrect' if:
@@ -108,7 +108,7 @@ Given N comparison items, the rubric must include variables:
 <input.name>_0 <input.name>_1 ... <input.name>_(N-1)
 for each input item name
 
-and specify how to compare them.
+And specify how to compare them.
 
 **Example ranking rubric:**
 
@@ -142,7 +142,7 @@ Evaluate which interaction produced a better response given the input query.
 **Format requirements:**
 - Prefix each variable with its index: `{variable_name_0}`, `{variable_name_1}`
 - Use XML tags to distinguish each comparison item
-- Make sure the rubric mentions the ordering requirements. Best is first in the output list, worst is last.
+- Make sure the rubric mentions the ordering requirements! Best is first in the output list, worst is last.
 
 ## Reasoning Requirements
 
