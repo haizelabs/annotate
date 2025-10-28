@@ -9,7 +9,7 @@ These questions **MUST be contextual** to their specific data.
 
 After we know what specifically the user wants to evaluate, we need to think a lot about what sort of data is necessary to present to the user for this evaluation.
 
-Note: it's a good idea to explore the interaction data before generating a feedback config. YOU SHOULD NOT BE exploring the original raw data.
+Note: It's a good idea to explore the interaction data before generating a feedback config. YOU SHOULD NOT BE exploring the original raw data.
 
 ## Evaluation Granularity
 
@@ -23,14 +23,13 @@ Here are some boilerplate, basic examples, though it may not necessarily map to 
 - **`interaction`**: A single, end to end agent run (usually a single request/response cycle in a trace) (e.g., "did the agent answer the user's question?")
 - **`group`**: Session-level (usually multiple request/response traces) (e.g., "did the agent help accomplish the user's goal?", "was the user overall happy in their conversation with the agent")
 
-Sometimes, you want to evaluate at a certain granularity level (e.g llm call tool choice which is typically at the step level) but it requires some additional information an individual step doesn't have (e.g. did the tool that was called produce helpful results). For these cases, you must use the `requires_context` field of the feedback config to encode more context into the individual eval.
+Sometimes, you want to evaluate at a certain granularity level (e.g., LLM call tool choice which is typically at the step level) but it requires some additional information an individual step doesn't have (e.g., did the tool that was called produce helpful results). For these cases, you must use the `requires_context` field of the feedback config to encode more context into the individual eval.
 
-In most LLM applications, "step" based evals will be similar to analyzing some sub-component of that AI application, while interaction/group based evals are more like end to end evaluations.
+In most LLM applications, "step"-based evals will be similar to analyzing some sub-component of that AI application, while interaction/group-based evals are more like end-to-end evaluations.
 
 ## Filtering Relevant Data
 
-Another important aspect of feedback is knowing what data to filter for could be relevant for the eval
-in the first place. For this, we use attribute matchers. You can check out how they work in the data models python file (_models.py).
+Another important aspect of feedback is knowing what data to filter for that could be relevant for the eval in the first place. For this, we use attribute matchers. You can check out how they work in the data models Python file (_models.py).
 
 ### Attribute Matchers
 
@@ -38,19 +37,17 @@ Add `attribute_matchers` to filter relevant data (optional).
 
 This will REQUIRE that the data we evaluate matches a certain pattern you enforce; e.g. the step name must contain "generation".
 
-**Think carefully for this one!! And definitely get feedback from the user if you are unsure**
+**Think carefully for this one! And definitely get feedback from the user if you are unsure**
 - Throwing random attributes here will result in **LOTS of false negatives** and data being excluded
 - At the same time, we don't want to include data that is obviously noisy and irrelevant
 
-Attribute matchers are also a dependent on GRANULARITY - pay attention to this! If the granularity is at the interaction level, do not
-write a matcher that assumes field paths of steps.
+Attribute matchers are also dependent on GRANULARITY - pay attention to this! If the granularity is at the interaction level, do not write a matcher that assumes field paths of steps.
 
-If the source data is CLEAN - e.g. comes from a dataset explicitly for evals, you probably don't need to use this. If the source
-data comes from wild west trace data that has a bunch of other traces/logs that are not super ai related, you probably will need to use this.
+If the source data is CLEAN - e.g., comes from a dataset explicitly for evals, you probably don't need to use this. If the source data comes from wild west trace data that has a bunch of other traces/logs that are not super AI-related, you probably will need to use this.
 
 ### AttributeMatcher Examples for Common Use Cases
 
-Here are practical examples of how to use AttributeMatchers for common AI evaluation scenarios. **NOTE** - you should treat these as toy scenarios; real world data may be much, much more gross and complex.
+Here are practical examples of how to use AttributeMatchers for common AI evaluation scenarios. **NOTE:** You should treat these as toy scenarios; real-world data may be much, much more gross and complex.
 
 #### Use Case 1: RAG System - Evaluating Retrieval Relevance to Query
 
@@ -102,7 +99,7 @@ You'll need to configure `input_items` to extract both pieces of information:
 **Granularity:** `step`
 **Goal:** Filter for LLM steps that made tool calls
 
-**NOTE: Here, although tool choice outputs in different formats for different ai apis, we usually just json dumps that all in "content", so we use contains
+**NOTE:** Here, although tool choice outputs in different formats for different AI APIs, we usually just JSON dump that all in "content", so we use contains
 ```json
 {
   "attribute_matchers": [
@@ -127,9 +124,9 @@ You'll need to configure `input_items` to extract both pieces of information:
 **Scenario:** You want to evaluate if generated code is correct and follows best practices.
 
 **Granularity:** `step`
-**Goal:** Filter for python code generation steps from a coding agent
+**Goal:** Filter for Python code generation steps from a coding agent
 
-**of course, assumes output_data.language exists
+**Of course, assumes output_data.language exists**
 ```json
 {
   "attribute_matchers": [
@@ -179,9 +176,9 @@ You'll need to configure `input_items` to extract both pieces of information:
 
 ### Tips for Designing AttributeMatchers
 
-1. **Start permissive, then tighten:** Begin with fewer matchers and add more as you see what data gets through
-2. **Validate with sample data:** Check a few interactions to ensure your matchers work as expected
-3. **Remember it's AND logic:** ALL matchers must pass for data to be included
+1. **Start permissive, then tighten:** Begin with fewer matchers and add more as you see what data gets through.
+2. **Validate with sample data:** Check a few interactions to ensure your matchers work as expected.
+3. **Remember it's AND logic:** ALL matchers must pass for data to be included.
 4. **Use the right operator:**
    - `contains_str`: For partial matches (flexible)
    - `equals_value`: For exact matches (strict)

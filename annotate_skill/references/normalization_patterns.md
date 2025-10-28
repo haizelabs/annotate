@@ -10,17 +10,14 @@ See `scripts/_models.py` for complete data model definitions.
 
 **Core Concepts:**
 - **InteractionStep**: Single span/event in a trace (e.g., one LLM call, one function execution)
-- **Interaction**: Collection of related steps grouped by `interaction_id` (e.g., single turn of an agent getting a request and responding). In some cases when theres no interaction grouping that makes sense, each interaction will just contain one step.
+- **Interaction**: Collection of related steps grouped by `interaction_id` (e.g., single turn of an agent getting a request and responding). In some cases when there's no interaction grouping that makes sense, each interaction will just contain one step.
 - **InteractionGroup**: Optional higher-level grouping via `group_id` (e.g., all interactions from one user, all interactions from one conversation session)
 
-Pay special attention to the `tags` field on individual steps and interactions. The source data may contain this tags attribute as well.
-It's good to port over the contents of the source data tags as a starting point, and then think about what kind of data we would find
-useful in tags.
+Pay special attention to the `tags` field on individual steps and interactions. The source data may contain this tags attribute as well. It's good to port over the contents of the source data tags as a starting point, and then think about what kind of data we would find useful in tags.
 
-In particular, we are interested in fields that help filter for relevant evaluation data. For example if you see a common pattern in a span that indicates it's an LLM call use for summarization, feel free to add a "is_summarizer = true" tag. When it later comes to evaluation and the user wants to only eval summarizer llm calls, this will come in handy. Similarly, if you see a bunch of noisy steps
-(e.g. spans representing pydantic validation steps) feel free to add "noisy:true" tag. 
+In particular, we are interested in fields that help filter for relevant evaluation data. For example, if you see a common pattern in a span that indicates it's an LLM call used for summarization, feel free to add an "is_summarizer = true" tag. When it later comes to evaluation and the user wants to only eval summarizer LLM calls, this will come in handy. Similarly, if you see a bunch of noisy steps (e.g., spans representing Pydantic validation steps), feel free to add a "noisy:true" tag. 
 
-Its a good idea to look at scripts/_models.py:
+It's a good idea to look at scripts/_models.py:
 ```
     from scripts.models import InteractionStep, Interaction, TestCase, Annotation, FeedbackConfig
 
@@ -28,25 +25,22 @@ Its a good idea to look at scripts/_models.py:
     python -c "from scripts.models import *; print(InteractionStep.__doc__)"
 ```
 
-Later, we'll use the [`AttributeMatcher`](scripts/_annotation_utils)  class to exclude/include certain steps from annotations. Tags are always a handy attribute to use here.
+Later, we'll use the [`AttributeMatcher`](scripts/_annotation_utils) class to exclude/include certain steps from annotations. Tags are always a handy attribute to use here.
 
-Some ideas of common span tags;
-status: ok, error
-span_kind: tool, llm, agent
+Some ideas of common span tags:
+- status: ok, error
+- span_kind: tool, llm, agent
 
 
-Another principle - DO NOT uncessarily skip data thats a different format, e.g. a trace json thats different from the normal span json. Find a way to incorporate as much as data as possible; e.g. by holding onto trace jsons and populating some info in the Interaction metadata even if it doesn't directly map to an interaction step.
+Another principle - DO NOT unnecessarily skip data that's in a different format, e.g., a trace JSON that's different from the normal span JSON. Find a way to incorporate as much data as possible; e.g., by holding onto trace JSONs and populating some info in the Interaction metadata even if it doesn't directly map to an interaction step.
 
 ---
 
 ## Possible raw data formats and **potential** ingestion approaches
 
-this is a non-exhaustive list of common raw data formats. again, even if the data format is the same (e.g. otel) the shape
-of the ai application can wildly vary - so make sure your approach is contextual to the specific data you are seeing.
+This is a non-exhaustive list of common raw data formats. Again, even if the data format is the same (e.g., OTel), the shape of the AI application can wildly vary - so make sure your approach is contextual to the specific data you are seeing.
 
-**GENERAL PRINCIPLE** --> be super defensive only as a last resort to unblock yourself after 2 tries. otherwise, it is ok
-to make opiniated assumptions about the data shape from your analysis. The most import thing, as always, is to ask the user for feedback
-to make sure you have an very very good understand of the type of data you are about to evaluate.
+**GENERAL PRINCIPLE** --> Be super defensive only as a last resort to unblock yourself after 2 tries. Otherwise, it is okay to make opinionated assumptions about the data shape from your analysis. The most important thing, as always, is to ask the user for feedback to make sure you have a very good understanding of the type of data you are about to evaluate.
 
 ### Pattern A: OTel-Compatible Traces (Simple)
 
@@ -106,10 +100,10 @@ def ingest_otel_span(span: dict) -> InteractionStep:
 **Example: OpenAI Agents SDK Format**
 
 **Characteristics:**
-- Wrapped in `{"object": "trace.span", ...}` format OR ``{"object": "trace", ...}` format - MIXED data types!
+- Wrapped in `{"object": "trace.span", ...}` format OR `{"object": "trace", ...}` format - MIXED data types!
 - Nested `span_data` object contains LLM info
 - Has `trace_id`, `parent_id`
-- Root spans have `parent_id: null`; "traces" are their own seperate concept
+- Root spans have `parent_id: null`; "traces" are their own separate concept
 
 **Input Structure:**
 ```json
@@ -242,7 +236,7 @@ for record in raw_records:
 ```
 
 **Key Points:**
-- Field names vary! (`parent_id` vs `parent_span_id`)
+- Field names vary (`parent_id` vs `parent_span_id`)
 - Root span detection: `parent_id is None`
 - Parse ISO 8601 timestamps to nanoseconds
 - Extract nested `span_data` fields
@@ -433,7 +427,7 @@ def parse_messages(messages_data):
             else:
                 content = ''
 
-            # NOTE! or sometimes `content` is missing and you need to find/collect the data
+            # NOTE: Sometimes `content` is missing and you need to find/collect the data
             # from other fields
             
             result.append(Message(role=role, content=content))
@@ -489,9 +483,9 @@ def group_steps_into_interactions(steps: list[InteractionStep]) -> dict[str, Int
 
 ### Issue: IDs not unique
 
-**Problem:** Multiple records have same ID
+**Problem:** Multiple records have the same ID
 
-FIRST - this is weird, ask the user whats going on
+FIRST - this is weird, ask the user what's going on
 
 **Solution:**
 ```python

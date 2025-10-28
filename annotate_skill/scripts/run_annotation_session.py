@@ -12,7 +12,6 @@ import asyncio
 import json
 import logging
 import os
-import shutil
 import signal
 import subprocess
 import sys
@@ -61,6 +60,9 @@ feedback_config: Optional[FeedbackConfig] = None
 frontend_process: Optional[subprocess.Popen] = None
 frontend_port: int = 5173
 
+# Lock to prevent concurrent config refresh operations
+_config_refresh_lock = asyncio.Lock()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -106,33 +108,6 @@ async def save_feedback_config():
         logger.info(f"✓ Updated feedback config stats: {feedback_config_path}")
 
 
-def _archive_annotated_test_cases(old_config_id: str) -> int:
-    global collection, haize_annotations_dir
-
-    if not collection or not haize_annotations_dir:
-        return 0
-
-    all_test_cases = collection.list_test_cases()
-    annotated_cases = [tc for tc in all_test_cases if tc.human_annotation is not None]
-
-    if not annotated_cases:
-        return 0
-
-    archive_dir = haize_annotations_dir / "archived_annotations" / old_config_id
-    archive_dir.mkdir(parents=True, exist_ok=True)
-
-    archived_count = 0
-    for tc in annotated_cases:
-        tc_file = collection.dir / f"tc_{tc.test_case_id}.json"
-        if tc_file.exists():
-            archive_file = archive_dir / f"tc_{tc.test_case_id}.json"
-            shutil.move(str(tc_file), str(archive_file))
-            archived_count += 1
-
-    logger.info(f"✓ Archived {archived_count} annotated test cases to {archive_dir}")
-    return archived_count
-
-
 async def refresh_on_startup_or_config_change() -> bool:
     global feedback_config, collection, test_case_processor_task, test_case_processor_worker
 
@@ -163,6 +138,14 @@ async def refresh_on_startup_or_config_change() -> bool:
 
     test_cases_dir = haize_annotations_dir / "test_cases"
     collection = TestCaseCollection(test_cases_dir, haize_annotations_dir)
+
+    # Clean up any orphaned test cases from other configs
+    deleted_count = collection.cleanup_for_config(feedback_config.id)
+    if deleted_count > 0:
+        logger.info(
+            f"🧹 Deleted {deleted_count} orphaned test cases from other configs"
+        )
+
     logger.info(f"✓ Initialized test case collection: {test_cases_dir}")
 
     if not collection.has_data():
@@ -235,56 +218,65 @@ async def create_or_update_feedback_config(
     """Create or update the active feedback configuration.
 
     This will:
-    1. Archive existing annotated test cases if a config already exists
+    1. Archive ALL test cases from the old config (if one exists) to archived_annotations/<old_config_id>/
     2. Save the new config to disk
     3. Refresh the entire annotation session (load config, generate test cases, start pipeline)
     """
     global feedback_config, collection
+    # Use lock to prevent concurrent config refreshes from interfering with each other
+    async with _config_refresh_lock:
+        try:
+            new_config = request.config
+            archived_count = 0
 
-    try:
-        new_config = request.config
-        archived_count = 0
-
-        if feedback_config:
-            logger.info(
-                f"📦 Archiving test cases from old config: {feedback_config.id}"
-            )
-            archived_count = _archive_annotated_test_cases(feedback_config.id)
-
-        feedback_config = new_config
-        await save_feedback_config()
-
-        test_cases_dir = haize_annotations_dir / "test_cases"
-        temp_collection = TestCaseCollection(test_cases_dir, haize_annotations_dir)
-
-        if temp_collection.has_data():
-            raw_judge_inputs = temp_collection.get_raw_judge_inputs(
-                feedback_config.granularity
-            )
-            if raw_judge_inputs:
-                filtered_inputs = temp_collection.filter_raw_judge_inputs(
-                    raw_judge_inputs, feedback_config
+            if feedback_config and collection:
+                logger.info(
+                    f"📦 Archiving all test cases from old config: {feedback_config.id}"
                 )
-                if not filtered_inputs:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="No raw judge inputs match the feedback config attribute matchers. Please adjust your configuration or ingest more data.",
+                archive_dir = (
+                    haize_annotations_dir / "archived_annotations" / feedback_config.id
+                )
+                archived_count = collection.archive_for_config(
+                    feedback_config.id, archive_dir
+                )
+                logger.info(
+                    f"✓ Archived {archived_count} test cases from config {feedback_config.id}"
+                )
+
+            feedback_config = new_config
+            await save_feedback_config()
+
+            test_cases_dir = haize_annotations_dir / "test_cases"
+            temp_collection = TestCaseCollection(test_cases_dir, haize_annotations_dir)
+
+            if temp_collection.has_data():
+                raw_judge_inputs = temp_collection.get_raw_judge_inputs(
+                    feedback_config.granularity
+                )
+                if raw_judge_inputs:
+                    filtered_inputs = temp_collection.filter_raw_judge_inputs(
+                        raw_judge_inputs, feedback_config
                     )
+                    if not filtered_inputs:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="No raw judge inputs match the feedback config attribute matchers. Please adjust your configuration or ingest more data.",
+                        )
 
-        await refresh_on_startup_or_config_change()
+            await refresh_on_startup_or_config_change()
 
-        test_case_counts = NewTestCasesInfo(filtered_inputs=len(filtered_inputs))
+            test_case_counts = NewTestCasesInfo(filtered_inputs=len(filtered_inputs))
 
-        return FeedbackConfigResponse(
-            status="success",
-            config_id=new_config.id,
-            archived_count=archived_count,
-            new_test_cases=test_case_counts,
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to update config: {str(e)}"
-        )
+            return FeedbackConfigResponse(
+                status="success",
+                config_id=new_config.id,
+                archived_count=archived_count,
+                new_test_cases=test_case_counts,
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, detail=f"Failed to update config: {str(e)}"
+            )
 
 
 @app.get("/feedback-config", response_model=GetFeedbackConfigResponse)
