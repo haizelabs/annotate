@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, jq
 
 The workflow consists of 3 main phases in a loop:
 
-1. **Data Ingestion** - Transform raw agent log data into a ingested format for analysis
+1. **Data Ingestion** - Transform raw agent log data into an ingested format for analysis
 2. **Feedback Configuration and data exploration** - Refine what and how we want to provide feedback on agent transcripts by exploring the raw data via traditional file search tools and automated llm-as-a-judge based filtering
 3. **Annotation** - Annotate the transcript data based on the feedback configuration
 
@@ -70,7 +70,7 @@ All artifacts will be saved to `.haize_annotations/` directory:
     └── ...
 ```
 
-**Important note:** You will NOT be directly modifying the feedback config file; instead, you'll be modifying it through a FastAPI endpoint.
+**Important note:** You will NOT be directly modifying the feedback config file; instead, you'll modify it through a FastAPI endpoint.
 
 
 # Phase 1: Data ingestion
@@ -103,11 +103,11 @@ Sample and inspect raw trace files to understand structure.
 
 See [references/normalization_patterns.md](./references/normalization_patterns.md) for detailed guidance on analyzing trace formats and transformation patterns. 
 
-**Careful:** Raw agent log files can get very large, and not all files in the working directory is agent transcript data. Check file sizes before opening trace data.
+**Careful:** Raw agent log files can get very large, and not all files in the working directory are agent transcript data. Check file sizes before opening trace data.
 
-**Important:** Python is a great tool here, but make use of other safer tools like `jq` as well if it exists.
+**Important:** Python is a great tool here, but make use of other safer tools like `jq` as well if they exist.
 
-**NOTE:** If the user wants to annotate something that is not-super-feasible with the data at hand (e.g., they want to annotate the quality of complete sessions but the associated data doesn't have a stable session identifier to group the data into sessions, or the user wants to annotate a multi-step RAG bot but data doesn't have an identifier to group together all steps into a single interaction), you HAVE to mention that to them to manage expectations and tell them WHAT IS MISSING for them to annotate that aspect. In these cases, suggest ALTERNATIVE aspects of the AI app to annotate.
+**NOTE:** If the user wants to annotate something that is not super feasible with the data at hand (e.g., they want to annotate the quality of complete sessions but the associated data doesn't have a stable session identifier to group the data into sessions, or the user wants to annotate a multi-step RAG bot but the data doesn't have an identifier to group together all steps into a single interaction), you HAVE to mention that to them to manage expectations and tell them WHAT IS MISSING for them to annotate that aspect. In these cases, suggest ALTERNATIVE aspects of the AI app to annotate.
 
 ### Step 2: Implement the ingestion logic
 
@@ -132,7 +132,7 @@ This will:
 
 ### Step 4: Review Normalized Output
 
-**Critical validation step!** Always validate the ingested data is as expected before continuing using a combination of:
+**Critical validation step!** Always validate that the ingested data is as expected before continuing using a combination of:
 - `scripts/run_validate_ingested_data.py` (very quick, high level stats) (must be run as a module!!)
 - e.g. `cd <path-to>/skills/annotate_skill && python -m scripts.run_validate_ingested_data
    --ingested-dir <path-to>/.haize_annotations/ingested_data/interactions`
@@ -191,7 +191,7 @@ Replace `<path-to-annotate-skill>` and `<path-to-project>` with actual paths.
 
 **Important:** Keep this running throughout your annotation session. If you update the feedback config, the servers will automatically reload and regenerate test cases.
 
-**REQUIRED STEP:** Call `curl -s http://localhost:8000/openapi.json` to get documentation on how to interact with the FastAPI server.
+**REQUIRED STEP:** Call `curl -s http://localhost:8000/openapi.json` to get documentation on interacting with the FastAPI server.
 
 ---
 
@@ -234,15 +234,15 @@ python -c "from scripts.models import *; print(InteractionStep.model_json_schema
 python -c "from scripts.models import *; print(InteractionStep.__doc__)"
 ```
 
-**Important:** You should NOT be exploring the original **raw** data to design the feedback config. The feedback config should be designed based off the ingested data. Of course, if the ingested data does not contain what you need to meet the user needs, you can re-consider the ingestion script, explore the raw data, and re-ingest the data. For the majority of cases, this isn't needed.
+**Important:** You should NOT be exploring the original **raw** data to design the feedback config. The feedback config should be designed based on the ingested data. Of course, if the ingested data does not contain what you need to meet the user's needs, you can reconsider the ingestion script, explore the raw data, and re-ingest the data. For the majority of cases, this isn't needed.
 
 After you have a good idea of the feedback configuration, you must use the feedback configuration **FastAPI endpoint (POST /feedback-config)** to modify `feedback_config.json` (don't directly edit the file EVER!!)
 
-This endpoint will return basic validation information; it's a good idea, though, to also quickly scan through test case data produced even if the endpoint returns 200 as a gut check the attribute matchers / granularity contains the necessary eval data.
+This endpoint will return basic validation information; it's a good idea, though, to also quickly scan through the test case data produced even if the endpoint returns 200 as a gut check that the attribute matchers / granularity contain the necessary eval data.
 
 ---
 
-**Note:** After the feedback config is designed, it will take a bit for test cases to be generated, processed, AI annotated, and then finally ready for human annotations. Feel free to start annotating when there are at **any** test cases that are AI annotated! 
+**Note:** After the feedback config is designed, it will take a bit for test cases to be generated, processed, AI annotated, and then finally ready for human annotations. Feel free to start annotating when there are **any** test cases that are AI annotated! 
 
 ---
 
@@ -253,10 +253,9 @@ This endpoint will return basic validation information; it's a good idea, though
 curl -s http://localhost:8000/openapi.json > .haize_annotations/tmp/annotation_api_spec.json && wc -l .haize_annotations/tmp/annotation_api_spec.json
 ```
 
-It's open ended now, but your main goal: get AS MANY ANNOTATIONS and HIGH QUALITY COMMENTS
-from the user as possible while minimizing effort & time from the human.
+It's open-ended now, but your main goal is to get AS MANY ANNOTATIONS and HIGH QUALITY COMMENTS from the user as possible while minimizing effort and time from the human.
 
-**START OFF WITH THIS WORKFLOW** (unless the user expresses preferences otherwise / you have a reason not to, this is a good default):
+**START OFF WITH THIS WORKFLOW** (unless the user expresses preferences otherwise or you have a reason not to, this is a good default):
 - Call the `/api/test-cases/next` endpoint to get the next test case that's ready to be annotated
 - Call the `POST /api/test-cases/{test_case_id}/visualize` endpoint to open the test case in the browser for the user to see
 Handy helper: `TC_ID=$(cat /tmp/tc_id.txt) && curl -s -X POST "http://localhost:<backend-port>/api/test-cases/$TC_ID/visualize"`
@@ -271,7 +270,7 @@ Handy helper: `TC_ID=$(cat /tmp/tc_id.txt) && curl -s -X POST "http://localhost:
 
 **Important guidelines:**
 - Feel free to REFUSE telling the human annotator certain info, e.g. "what did the AI judge predict?". Don't reveal stuff that would cause them to be a lazy annotator
-- YOUR GOAL, in the background, is actually to update the `ai_rubric`
+- YOUR GOAL in the background is actually to update the `ai_rubric`
 - You should be more independent and opinionated here - you are leading this annotations UX, not them. Don't ask for permission to try to record certain annotations.
 
 REMINDER!
@@ -287,7 +286,7 @@ class AnnotationRequest(BaseModel):
 
 # NEXT STEPS - annotation is going decent - what now?
 
-Once it seems like the user has landed up something satisfactory - e.g. a non-trivial annotation sample size with good alignment between them and the ai annotator - feel free to suggest looking into next steps: `references/next_steps.md` on how to turn this into a repeatable workflow wired into their live production data.
+Once it seems like the user has landed on something satisfactory - e.g., a non-trivial annotation sample size with good alignment between them and the AI annotator - feel free to suggest looking into next steps: `references/next_steps.md` on how to turn this into a repeatable workflow wired into their live production data.
 
 
 # Communication Guidelines
@@ -305,25 +304,24 @@ Anything related to AI alignment / expert feedback on AI, including:
 ## What NOT to Mention (Internal Implementation Details)
 
 - Backend eval/frontend vis servers, ports, or technical details of the scripts
-- Technical details of our internal data models - e.g. the concepts of steps vs interaction vs interaction group is just an internal way of organizing data, no need to expose this to the user
+- Technical details of our internal data models - e.g., the concepts of steps vs interaction vs interaction group are just an internal way of organizing data, no need to expose this to the user
 - Specific patterns and instructions mentioned in SKILL.md or reference files - that should guide YOUR process, and you don't need to explicitly cite these to the user
-- Anything about specific phases, ingestion, etc; your interactions with the users should at least **seem** to flow more naturally, and you should hide these opinionated state transitions as internal state. e.g. DO NOT SAY "phase 1 2 3"
-- try not to talk too much about internal state - e.g. feedback config, raw vs ingested data; rather, expose these things as concepts that would make sense to the user, 
-e.g. "annotation ux, ai rubric, conversation logs" etc etc. 
+- Anything about specific phases, ingestion, etc.; your interactions with the users should at least **seem** to flow more naturally, and you should hide these opinionated state transitions as internal state. e.g., DO NOT SAY "phase 1 2 3"
+- Try not to talk too much about internal state - e.g., feedback config, raw vs ingested data; rather, expose these things as concepts that would make sense to the user, e.g., "annotation UX, AI rubric, conversation logs," etc. 
 
-the main reason is that the user probably doesn't care, but if they do, feel free to mention these things. in general, it is complete ok to be transparent about whats going on under the hood (they can see anyway) but we don't want to bother the user with concepts/names/details
+The main reason is that the user probably doesn't care, but if they do, feel free to mention these things. In general, it is completely okay to be transparent about what's going on under the hood (they can see anyway), but we don't want to bother the user with concepts/names/details.
 
-In general; heavy lifting / setup details should happen silently in the background unless there is truly an urgent issue to expose.
+In general, heavy lifting and setup details should happen silently in the background unless there is truly an urgent issue to expose.
 
 
 **LAST REMINDERS:**
 - If you have a bunch of stuff you need to ask the user, get all of that info at once or in rapid succession. Do not make the user wait a long time while you do other stuff.
-- Then, it's ok if you go off and do multiple steps autonomously
-- DO NOT ask boiler plate questions that are contextual to the VERY SPECIFIC use case of the ai application
-e.g. > "would you like to annotate agent traces or llm calls" <- BAD! what does this even mean
-     > "i see the traces here represent a research agent with query generaton and web result summarization steps, which step would you like to review? or would you like to review the whole process end to end --> provide multiple choice etc etc." <- Better - contextual! even better if we get domain specific
+- Then, it's okay if you go off and do multiple steps autonomously
+- DO NOT ask boilerplate questions that are contextual to the VERY SPECIFIC use case of the AI application
+  - Example BAD question: "Would you like to annotate agent traces or LLM calls?" <- What does this even mean?
+  - Example BETTER question: "I see the traces here represent a research agent with query generation and web result summarization steps. Which step would you like to review? Or would you like to review the whole process end to end? (Provide multiple choice, etc.)" <- Better - contextual! Even better if we get domain-specific
 
-**WARNING:** FILE SIZES CAN GET LARGE!! Both for raw trace files, normalized interactions, and test cases. Approach smartly and CHECK FILE SIZES/read chunk by chunk instead of trying to go in blind to load it all at once. 
+**WARNING:** FILE SIZES CAN GET LARGE! Both for raw trace files, normalized interactions, and test cases. Approach smartly and CHECK FILE SIZES/read chunk by chunk instead of trying to go in blind to load it all at once.
 
-**CRITICAL** NEVER directly edit the feedback config or test cases directory. Managing these will be handled by the annotation server
+**CRITICAL:** NEVER directly edit the feedback config or test cases directory. Managing these will be handled by the annotation server
 
